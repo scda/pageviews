@@ -2,12 +2,28 @@ class hadoop {
   $hadoop_home = "/opt/hadoop"
   $hadoop_version = "2.7.3"
 
+  ## BEGIN local test
+  file {
+    "/tmp/hadoop.tar.gz":
+    source => "puppet:///modules/hadoop/hadoop-2.7.3.tar.gz",
+    before => Exec["download_hadoop"]
+  }
   exec { "download_hadoop" :
     command => "wget -O /tmp/hadoop.tar.gz http://mirrors.cicku.me/apache/hadoop/common/hadoop-${hadoop_version}/hadoop-${hadoop_version}.tar.gz",
+    path => $path,
+    unless => "ls /tmp | grep hadoop.tar.gz",
+    require => Exec["keycopy"]
+  }
+  ## END local test
+
+  /*
+  exec { "download_hadoop" :
+  command => "wget -O /tmp/hadoop.tar.gz http://mirrors.cicku.me/apache/hadoop/common/hadoop-${hadoop_version}/hadoop-${hadoop_version}.tar.gz",
     path => $path,
     unless => "ls /opt | grep hadoop-${hadoop_version}",
     require => Exec["keycopy"]
   }
+  */
 
   exec { "unpack_hadoop" :
     command => "tar -zxf /tmp/hadoop.tar.gz -C /opt",
@@ -69,7 +85,7 @@ class hadoop {
     path => $path,
     require => Exec["unpack_hadoop"]
   }
-
+  
   exec { "dfs_directories_1" :
     command => "${hadoop_home}-${hadoop_version}/bin/hdfs dfs -mkdir /user",
     path => $path,
@@ -81,4 +97,5 @@ class hadoop {
     path => $path,
     require => Exec["dfs_directories_1"]
   }
+
 }
