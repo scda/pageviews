@@ -13,7 +13,7 @@ All programs are currently (February 2017) available for MacOS, Windows and GNU/
 I recommend getting the latest official version at the projects' homepages. Versions installed via the system's package manager can obviously deviate. The software version used during the creation of this project are indicated within the respective sections.
 
 ## Installation ##
-** Vagrant **  
+**Vagrant**  
 [vagrantup.com](https://www.vagrantup.com)  
 Version used during development: 1.9.1
 
@@ -22,7 +22,7 @@ Vagrant can be installed via Ruby (if present on your machine):
 gem install vagrant
 ```
 
-** Virtualbox **  
+**Virtualbox**  
 [virtualbox.org](https://www.virtualbox.org)  
 Version used during development: 5.1.14
 
@@ -109,7 +109,7 @@ Vagrant creates the virtual machines and performs a few initial configurations w
 
 The following setup will be achieved by executing the vagrant and puppet scripts:
 <!-- TODO: create, upload and link image -->
-![pageviews machine setup ](https://github.com/adam-p/markdown-here/raw/master/src/common/images/icon48.png "abstract cluster setup")
+![pageviews machine setup ](https://github.com/adam-p/markdown-here/raw/master/src/common/images/icon48.png "machine setup")
 
 ### **Vagrant** ###
 The initial
@@ -171,7 +171,15 @@ Unterhalb des zuvor angegebenen module_paths können Unterordner für einzelne M
 
 #### Hadoop-Modul ####
 
+web access: http://localhost:50070
+
+if connection fails check if hadoop is listening:
+  $ netstat -anlp | grep LISTEN
+
+
+
 #### Kafka-Modul ####
+
 
 
 ## **Das Projekt** ##
@@ -182,9 +190,12 @@ Unterhalb des zuvor angegebenen module_paths können Unterordner für einzelne M
 <!--
 # TODO #
 ## aktuell ##
+* combine puppet scripts for hadoop (modules)
 * Dokumentation der letzten Schritte (alles ab "Einrichtung Vagrant" > ändert sich ja jetzt ohnehin noch einmal wegen multinode)
-* (welche) ports nach außen durchreichen?
-* "run always" teile aus puppet nehmen / entsprechend markieren (start daemons etc.)
+* welche ports nach außen durchreichen?
+* aus puppet entfernen, was nach jedem start laufen soll:
+  * start daemons (hadoop - start-all?)
+  * 
 * Probleme mit Proxy (speziell der Download von Hadoop etc.)
 * https://kafka.apache.org/quickstart
 
@@ -214,9 +225,11 @@ Unterhalb des zuvor angegebenen module_paths können Unterordner für einzelne M
   * Programmierung außerhalb
   * Job starten mit lokalen Daten und auf "virtueller remote hadoop" ausführen (java Dateien auf remote hadoop ausführen, ohne die Dateien direkt auf das Dateisystem der virtuellen Maschine ablegen zu müssen?)
 
+
+
 # SOURCES #
 ## proxy ##
-https://stackoverflow.com/questions/11211705/setting-proxy-in-wget#11211812
+https://hadoop.apache.org/docs/r2.7.3/hadoop-project-dist/hadoop-common/SingleCluster.html
 
 ## virtual environment ##
 https://dzone.com/articles/setting-hadoop-virtual-cluster
@@ -228,6 +241,7 @@ https://www.petrikainulainen.net/programming/apache-hadoop/creating-hadoop-mapre
 
 ## Spark ##
 http://www.michael-noll.com/blog/2014/10/01/kafka-spark-streaming-integration-example-tutorial/
+
 
 
 # Alte Anmkerungen #
