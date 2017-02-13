@@ -20,11 +20,11 @@ Vagrant.configure("2") do |config|
     vb.memory = "2048"
   end
 
+  # config ssh connections
+  config.ssh.insert_key = false
+
   # https://www.vagrantup.com/docs/multi-machine/
   config.vm.define "hadoop_master" do |hdp|
-    # config ssh connections
-    hdp.ssh.insert_key = false
-
     # remap host port to guest port
     hdp.vm.network "forwarded_port", guest: 50070, host: 50070
 
@@ -37,18 +37,19 @@ Vagrant.configure("2") do |config|
   end
 
   config.vm.define "kafka_node" do |kfk|
-    # enable provisioning via puppet
     kfk.vm.provision :puppet do |puppet|
       puppet.manifests_path = "puppet/manifests"
-      puppet.manifest_file = "hadoop-machine.pp"
+      puppet.manifest_file = "kafka-machine.pp"
       puppet.module_path = "puppet/modules"
     end
   end
 
-
-=begin
   config.vm.define "cassandra_seed" do |css|
-    # ...
+    css.vm.provision :puppet do |puppet|
+      puppet.manifests_path = "puppet/manifests"
+      puppet.manifest_file = "cassandra-machine.pp"
+      puppet.module_path = "puppet/modules"
+    end
   end
-=end
+
 end

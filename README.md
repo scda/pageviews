@@ -17,7 +17,7 @@ I recommend getting the latest official version at the projects' homepages. Vers
 [vagrantup.com](https://www.vagrantup.com)  
 Version used during development: 1.9.1
 
-Vagrant can be installed via Ruby (if present on your machine):
+Vagrant can be installed via Ruby's gem (if present on your machine):
 ```bash
 gem install vagrant
 ```
@@ -86,9 +86,10 @@ Access the VM via SSH:
 ```bash
 vagrant ssh
 ```
-Leave the SSH environment on the VM via *CTRL-D* or:
+Leave the SSH environment on the VM via *CTRL-D* or one of the following:
 ```bash
 logout
+exit
 ```
 
 Delete the VM (including all used files except the box's base-image):
@@ -170,6 +171,7 @@ Unterhalb des zuvor angegebenen module_paths können Unterordner für einzelne M
 ```
 
 #### Hadoop-Modul ####
+https://hadoop.apache.org/docs/r2.7.3/hadoop-project-dist/hadoop-common/SingleCluster.html
 
 web access: http://localhost:50070
 
@@ -180,6 +182,26 @@ if connection fails check if hadoop is listening:
 
 #### Kafka-Modul ####
 
+https://kafka.apache.org/quickstart
+
+port zookeper: 2181
+
+> cd /usr/share/kafka_***
+> bin/zookeeper-server-start.sh config/zookeeper.properties
+> bin/kafka-server-start.sh config/server.properties
+
+#### Cassandra-Modul ####
+
+https://cassandra.apache.org/
+
+https://cassandra.apache.org/doc/latest/getting_started/installing.html#installation-from-binary-tarball-files
+
+bin/cassandra -R (-R for root) (alternativ evtl data/ und logs/ sub-dirs erstellen und dann ohne superuser starten)
+
+
+#### Spark-Modul ####
+https://spark.apache.org/streaming/
+
 
 
 ## **Das Projekt** ##
@@ -189,28 +211,25 @@ if connection fails check if hadoop is listening:
 
 <!--
 # TODO #
-## aktuell ##
-* combine puppet scripts for hadoop (modules)
-* Dokumentation der letzten Schritte (alles ab "Einrichtung Vagrant" > ändert sich ja jetzt ohnehin noch einmal wegen multinode)
-* welche ports nach außen durchreichen?
-* aus puppet entfernen, was nach jedem start laufen soll:
-  * start daemons (hadoop - start-all?)
-  * 
-* Probleme mit Proxy (speziell der Download von Hadoop etc.)
-* https://kafka.apache.org/quickstart
+## up next ##
+* Dokumentation der letzten Schritte (ab Vagrant Einrichtung (alles, was noch nicht englisch ist ;))
+* understand apache cassandra
+* startup scripts
+  * start hadoop daemons (hadoop - start-all?)
+  * start kafka + zookeeper
 
 ## VM ##
 * multinode (3)
-  * 1x hadoop master
-  * 1x zookeeper
-  * 1x kafka
-  * cassandra seed
+  ✔ 1x hadoop master
+  ❌❌❌* 1x zookeeper
+  ✔ 1x kafka
+  ✔ cassandra seed
   * spark stream
   * storm batch
-* Datenbank als Output für vorberechnete Daten
-* links in Kafka füttern
-* rechts HDFS schreiben (optional vorher aus Kafka holen)
-* config von hadoop über xml
+* Datenbank als Output für vorberechnete Daten (cass)
+* Datenstream in Kafka füttern
+  * rechts raus holen und in HDFS schreiben
+  * links "normales" stream
 
 ### Fragen ###
 * Wie kommen die Nachrichten zu Kafka und Zookeper (Input) - gibt es ein Spring Kafka "Plugin"?
@@ -228,27 +247,18 @@ if connection fails check if hadoop is listening:
 
 
 # SOURCES #
-## proxy ##
-https://hadoop.apache.org/docs/r2.7.3/hadoop-project-dist/hadoop-common/SingleCluster.html
-
-## virtual environment ##
-https://dzone.com/articles/setting-hadoop-virtual-cluster
-https://hadoop.apache.org/docs/r2.7.3/hadoop-project-dist/hadoop-common/SingleCluster.html
-https://docs.puppet.com/puppet/latest/type.html#exec-attribute-timeout
-
 ## actual work with hadoop ##
-https://www.petrikainulainen.net/programming/apache-hadoop/creating-hadoop-mapreduce-job-with-spring-data-apache-hadoop/
+  https://www.petrikainulainen.net/programming/apache-hadoop/creating-hadoop-mapreduce-job-with-spring-data-apache-hadoop/
 
 ## Spark ##
-http://www.michael-noll.com/blog/2014/10/01/kafka-spark-streaming-integration-example-tutorial/
+  http://www.michael-noll.com/blog/2014/10/01/kafka-spark-streaming-integration-example-tutorial/
 
 
 
 # Alte Anmkerungen #
 evtl. für die Doku noch relevant ... (?)
 * Pig und Hive veraltet
-* Spring zu weit abstrahiert ("von der Praxis")?
-* spring Cloud Data FLow Plattform scheinbar zu abstrakt
+* Spring Cloud Data FLow Plattform scheinbar zu abstrakt
   * https://www.youtube.com/watch?v=L6p1pzGgadA
   * http://cloud.spring.io/spring-cloud-dataflow/
     * http://localhost:9393/dashboard

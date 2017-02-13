@@ -9,10 +9,10 @@ class hadoop {
     before => Exec["download_hadoop"]
   }
   exec { "download_hadoop" :
-    command => "wget -O /tmp/hadoop.tar.gz http://mirrors.cicku.me/apache/hadoop/common/hadoop-${hadoop_version}/hadoop-${hadoop_version}.tar.gz",
+    command => "echo 0",
     path => $path,
     unless => "ls /tmp | grep hadoop.tar.gz",
-    require => Exec["keycopy"]
+    require => Exec["removeknownhosts"]
   }
   ## END local test
 
@@ -85,7 +85,7 @@ class hadoop {
     path => $path,
     require => Exec["unpack_hadoop"]
   }
-  
+
   exec { "dfs_directories_1" :
     command => "${hadoop_home}-${hadoop_version}/bin/hdfs dfs -mkdir /user",
     path => $path,
