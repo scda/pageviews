@@ -214,6 +214,7 @@ https://spark.apache.org/streaming/
 ## up next ##
 * Dokumentation der letzten Schritte (ab Vagrant Einrichtung (alles, was noch nicht englisch ist ;))
 * understand apache cassandra
+* generator to write to kafka (spring kafka / spring stream kafka ?)
 * startup scripts
   * start hadoop daemons (hadoop - start-all?)
   * start kafka + zookeeper
