@@ -93,6 +93,8 @@ ipch/
 *.rar
 *.tar
 *.zip
+*.tar.gz
+*.tgz
  
 # Logs and databases #
 ######################
