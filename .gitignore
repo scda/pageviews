@@ -1,6 +1,6 @@
 # files for this project #
 ##########################
-.vagrant/
+
 
 # Compiled source #
 ###################
@@ -83,6 +83,37 @@ ipch/
 *.svclog
 *.scc
 
+# Vagrant #
+###########
+.vagrant/
+
+# Maven #
+###########
+target/
+!.mvn/wrapper/maven-wrapper.jar
+
+### Spring ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+
+### NetBeans ###
+nbproject/private/
+build/
+nbbuild/
+dist/
+nbdist/
+.nb-gradle/
+
 # Packages #
 ############
 *.7z
@@ -95,13 +126,13 @@ ipch/
 *.zip
 *.tar.gz
 *.tgz
- 
+
 # Logs and databases #
 ######################
 *.log
 *.sql
 *.sqlite
- 
+
 # OS generated files #
 ######################
 .DS_Store
