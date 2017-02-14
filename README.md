@@ -113,48 +113,36 @@ The following setup will be achieved by executing the vagrant and puppet scripts
 ![pageviews machine setup ](https://github.com/adam-p/markdown-here/raw/master/src/common/images/icon48.png "machine setup")
 
 ### **Vagrant** ###
-The initial
-Alle anfänglichen Schritte der Einrichtung werden in der *Vagrantfile* beschrieben:
-Es wird ein Ubuntu-Image für VirtualBox als Basis-System angegeben, welches bei der Einrichtung automatisch bezogen wird.
+The initial steps of the setup are being described within the *Vagrantfile* in the rootdirectory:
+
+The virtualmachine will run on a so called *box* whose base image will be pulled automatically from a central repository, if not present already:
 ```ruby
 config.vm.box = "ubuntu/trusty64"
 ```
 
-Es werden definierte Ports von der Gastmaschine nach außen freigegeben.
-```ruby
-config.vm.network "forwarded_port", guest: 8080, host: 8080
-```
-
-<!-- TODO: notwending? -->
-Es werden Ordner definiert, die einen manuellen Dateiaustausch zwischen der Gast- und der Hostmaschine erlauben.
-```ruby
-config.vm.synced_folder "./guestData/", "/vagrant_data"
-```
-
-Die Menge des zur Verfügung gestellten Speichers wird definiert und die Eigenschaft an VirtualBox übergeben.
+The amount of memory available to a single vm is specified via a virtualbox specific variable:
 ```ruby
 config.vm.provider "virtualbox" do |vb|
     vb.memory = "2048"
 end
 ```
-Die weiterführende Einrichtung wird wie beschrieben Puppet überlassen, worüber Vagrant an dieser Stelle ebenfalls informiert wird.
+
+All further setup, so called provisioning of the machines will be left to puppet:
 ```ruby
 config.vm.provision :puppet do |puppet|
   puppet.manifests_path = "puppet/manifests"
-  puppet.manifest_file = "hadoop-machine.pp"
+  puppet.manifest_file = "example-machine.pp"
   puppet.module_path = "puppet/modules"
 end
 ```
 
 ### **Puppet** ###
-Die zuletzt in der *Vagrantfile* angegebenen Verzeichnisse und Dateien müssen konsequent eingehalten werden. Die weiterführende Einrichtung der virtuellen Maschinen wird über die angegebene *manifests*-Datei begonnen und anschließend in logisch abgetrennte Module unterteilt.
-
-Unterhalb des zuvor angegebenen module_paths können Unterordner für einzelne Module angelegt werden. Das jeweils obere Verzeichnis kann dabei einen beliebigen Namen tragen, während die folgenden Unterordner dann dem vorgegebenen Schema folgen sollten, damit die Module automatisch als solche erkannt werden können.
+In this setup every machine has its own separate manifest-file and accesses different modules (some are shared, some only used by one machine). Below the specified module_path subdirectories for those separate modules can be created. The following scheme is being used:
 ```
   puppet
   |
   └── manifests
-  |   | hadoop-machine.pp
+  |   | example-machine.pp
   |
   └── modules
       |
@@ -206,13 +194,23 @@ https://spark.apache.org/streaming/
 
 ## **Das Projekt** ##
 
-### Spring XY ###
+### Generator ###
+= Kafka producer
+
+SPring XD?
+
+https://projects.spring.io/spring-kafka/
+https://spring.io/blog/2015/04/15/using-apache-kafka-for-integration-and-data-processing-pipelines-with-spring
+https://msvaljek.blogspot.de/2015/12/stream-processing-with-spring-kafka_44.html
+
+
+### Verarbeitung ... ? ###
 
 
 <!--
 # TODO #
 ## up next ##
-* Dokumentation der letzten Schritte (ab Vagrant Einrichtung (alles, was noch nicht englisch ist ;))
+* Dokumentation der einzelnen Maschinen/Module ;)
 * understand apache cassandra
 * generator to write to kafka (spring kafka / spring stream kafka ?)
 * startup scripts
