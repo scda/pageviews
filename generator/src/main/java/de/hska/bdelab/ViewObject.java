@@ -6,28 +6,23 @@ public class ViewObject {
 	private String uri;
 	private String uniqueIdentifier;
 	
+	public ViewObject(String timestamp, String ip, String uri, String uid) {
+		this.timestamp = timestamp;
+		this.ip = ip;
+		this.uri = uri;
+		this.uniqueIdentifier = uid;
+	}
+	
 	public String getTimestamp() {
 		return timestamp;
-	}
-	public void setTimestamp(String timestamp) {
-		this.timestamp = timestamp;
 	}
 	public String getIp() {
 		return ip;
 	}
-	public void setIp(String ip) {
-		this.ip = ip;
-	}
 	public String getUri() {
 		return uri;
 	}
-	public void setUri(String uri) {
-		this.uri = uri;
-	}
-	public String getUniqueIdentifier() {
+	public String getUid() {
 		return uniqueIdentifier;
-	}
-	public void setUniqueIdentifier(String uniqueIdentifier) {
-		this.uniqueIdentifier = uniqueIdentifier;
 	}
 }
