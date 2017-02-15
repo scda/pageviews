@@ -197,7 +197,10 @@ https://spark.apache.org/streaming/
 ### Generator ###
 = Kafka producer
 
-SPring XD?
+direktes Projekt :  https://projects.spring.io/spring-kafka/
+Teil von            http://cloud.spring.io/spring-cloud-stream/
+Teil von            Sphttp://projects.spring.io/spring-cloud/
+
 
 https://projects.spring.io/spring-kafka/
 https://spring.io/blog/2015/04/15/using-apache-kafka-for-integration-and-data-processing-pipelines-with-spring
