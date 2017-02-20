@@ -4,31 +4,36 @@ import java.util.Date;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 
+import org.springframework.cloud.stream.annotation.EnableBinding;
+import org.springframework.cloud.stream.messaging.Source;
+import org.springframework.integration.annotation.InboundChannelAdapter;
+import org.springframework.integration.annotation.Poller;
+
+@EnableBinding(Source.class)
 public class Generator {
 
 
 	public Generator(){
 
 	}
-
-	public void Run(){
-		while(true) {
-			// create ViewObject with "randomvalues"
-			ViewObject vo = new ViewObject(GenerateTimestamp(),
-											GenerateIp(),
-											GenerateUri(),
-											GenerateUid());
-
-			System.out.println(vo.getTimestamp() + " - " + vo.getIp() + " - " + vo.getUri() + " - " + vo.getUid());
-
-			// write viewobject to kafka ... in some way
-
-			try {
-				Thread.sleep(ThreadLocalRandom.current().nextInt(100,10000));
-			} catch (InterruptedException e) { e.printStackTrace(); }
-		}
-
+	
+	@InboundChannelAdapter(value = Source.OUTPUT, poller = @Poller(fixedDelay = "5000", maxMessagesPerPoll = "1"))
+	public String pageviewMessageSource()  {		
+		return (GenerateTimestamp() + "," + GenerateIp() + "," + GenerateUri() + "," + GenerateUid());
 	}
+	
+	/*
+	@Bean
+	@InboundChannelAdapter(value = Source.OUTPUT, poller = @Poller(fixedDelay = "5000", maxMessagesPerPoll = "1"))
+	public MessageSource<String> pageviewMessageSource()  {
+		// create ViewObject with "randomvalues"
+		ViewObject vo = new ViewObject(GenerateTimestamp(),
+				GenerateIp(),
+				GenerateUri(),
+				GenerateUid());
+		
+		return() -> new GenericMessage<String>(vo.getTimestamp() + "," + vo.getIp() + "," + vo.getUri() + "," + vo.getUid());
+	}*/
 
 	// helpers
 	private String GenerateTimestamp() {

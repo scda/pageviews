@@ -37,6 +37,10 @@ Vagrant.configure("2") do |config|
   end
 
   config.vm.define "kafka_node" do |kfk|
+    kfk.vm.network "private_network", ip: "192.168.33.21"
+    kfk.vm.network "forwarded_port", guest: 9092, host:9092
+    kfk.vm.network "forwarded_port", guest: 2181, host:2181
+
     kfk.vm.provision :puppet do |puppet|
       puppet.manifests_path = "puppet/manifests"
       puppet.manifest_file = "kafka-machine.pp"

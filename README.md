@@ -173,10 +173,15 @@ if connection fails check if hadoop is listening:
 https://kafka.apache.org/quickstart
 
 port zookeper: 2181
+port broker-list / kafka.network.acceptor (awaiting socket connections): 9092
+
 
 > cd /usr/share/kafka_***
 > bin/zookeeper-server-start.sh config/zookeeper.properties
 > bin/kafka-server-start.sh config/server.properties
+> bin/kafka-topics.sh --list --zookeeper localhost:2181
+> bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic output --from-beginning
+
 
 #### Cassandra-Modul ####
 
