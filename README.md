@@ -173,6 +173,7 @@ if connection fails check if hadoop is listening:
 https://kafka.apache.org/quickstart
 
 * set private network IP (to not use "localhost, which is buggy sometimes")
+* run both in daemon mode
 
 port zookeper: 2181
 port broker-list / kafka.network.acceptor (awaiting socket connections): 9092
