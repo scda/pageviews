@@ -172,15 +172,24 @@ if connection fails check if hadoop is listening:
 
 https://kafka.apache.org/quickstart
 
+* set private network IP (to not use "localhost, which is buggy sometimes")
+
 port zookeper: 2181
 port broker-list / kafka.network.acceptor (awaiting socket connections): 9092
 
+kafka listen-server > server.properties > listen to all interfaces (listen=0.0.0.0 ...)
+
+* remote: use IP instead of localhost
 
 > cd /usr/share/kafka_***
 > bin/zookeeper-server-start.sh config/zookeeper.properties
 > bin/kafka-server-start.sh config/server.properties
+
+> bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 1 --topic test
 > bin/kafka-topics.sh --list --zookeeper localhost:2181
-> bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic output --from-beginning
+
+> bin/kafka-console-producer.sh --broker-list localhost:9092 --topic test
+> bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic test --from-beginning
 
 
 #### Cassandra-Modul ####
@@ -203,8 +212,12 @@ https://spark.apache.org/streaming/
 = Kafka producer
 
 direktes Projekt :  https://projects.spring.io/spring-kafka/
-Teil von            http://cloud.spring.io/spring-cloud-stream/
+>> Teil von            http://cloud.spring.io/spring-cloud-stream/
 Teil von            Sphttp://projects.spring.io/spring-cloud/
+
+
+** set IP and ports accordingly
+
 
 
 https://projects.spring.io/spring-kafka/

@@ -1,1 +1,9 @@
 fixedDelay: 5000
+spring:
+  cloud:
+    stream:
+      kafka:
+        binder:
+          brokers: 10.10.33.22
+          defaultBrokerPort: 9092
+          zkNodes: 10.10.33.22

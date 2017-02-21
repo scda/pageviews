@@ -58,4 +58,10 @@ class kafka {
     require => Exec["download_kafka"]
   }
 
+	file {
+		"${home_dir}/kafka_${scala_version_major}-${kafka_version}/config/server.properties":
+		source => "puppet:///modules/kafka/server.properties",
+		require => Exec["unpack_kafka"]
+	}
+
 }
