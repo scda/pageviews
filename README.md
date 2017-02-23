@@ -238,7 +238,7 @@ The Generator is a Spring Boot / Spring Cloud application that creates a set of 
 * visitor IP
 * visitor UID
 * visited URL
-The created data are then being sent to a Kafka Topic named *Output* with the help of [Spring Cloud Stream](http://cloud.spring.io/spring-cloud-stream/).
+The created data are then being sent to a Kafka Topic named *Output* with the help of [Spring Cloud Stream](http://cloud.spring.io/spring-cloud-stream/). The reference can be found here: [Spring Cloud Stream reference](http://docs.spring.io/spring-cloud-stream/docs/1.0.2.RELEASE/reference/htmlsingle/index.html)
 
 The main application class is annotated with
 ```java
@@ -275,9 +275,12 @@ Inside the *application.yml* IP and port of Kafka's brokers are set (see above):
 <!--
 # TODO #
 ## up next ##
-* understand apache cassandra
-* startup scripts
-  * start hadoop daemons (hadoop - start-all?)
+* cassandra node
+* hadoop
+  * read from kafka
+  * put to HDFS
+  * batch in some way
+
 
 ## VM ##
 * multinode (3)
