@@ -2,6 +2,11 @@ class hadoop {
   $hadoop_home = "/opt/hadoop"
   $hadoop_version = "2.7.3"
 
+  package { "openjdk-7-jre-headless" :
+	  ensure => present,
+	  require => Exec["apt-get update"]
+	}
+
   ## BEGIN local test
   file {
     "/tmp/hadoop.tar.gz":
@@ -97,5 +102,13 @@ class hadoop {
     path => $path,
     require => Exec["dfs_directories_1"]
   }
+
+  cron { "cron-dfs-daemons" :
+    command => "${hadoop_home}-${hadoop_version}/sbin/start-dfs.sh",
+    user => "root",
+    special => "reboot",
+    ensure => present,
+    require => Exec["unpack_hadoop"]
+	}
 
 }
