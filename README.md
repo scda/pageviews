@@ -228,16 +228,44 @@ https://spark.apache.org/streaming/
 
 
 
-## **Das Projekt** ##
+## **Spring Apps** ##
 
 ### Generator ###
-= Kafka producer
+The project template for this application can be created via the Spring Initializr Tool on [start.spring.io](https://start.spring.io). The Spring Cloud Stream Binder for Kafka is needed.
 
- http://cloud.spring.io/spring-cloud-stream/
+The Generator is a Spring Boot / Spring Cloud application that creates a set of random strings to simulate pageviews on a webserver with
+* timestamp
+* visitor IP
+* visitor UID
+* visited URL
+The created data are then being sent to a Kafka Topic named *Output* with the help of [Spring Cloud Stream](http://cloud.spring.io/spring-cloud-stream/).
 
+The main application class is annotated with
+```java
+  @SpringBootApplication
+```
 
-** set IP and ports accordingly !
+The generator class is annotated to get connectivity to a message broker (Kafka in this case) as a producer:
+```java
+  @EnableBinding(Source.class)
+```
 
+The generating function is annotated to write to Kafka's *Output* topic repeatedly in a fixed time interval:
+```java
+  @InboundChannelAdapter(value = Source.OUTPUT, poller = @Poller(fixedDelay = "5000", maxMessagesPerPoll = "1"))
+```
+
+Inside the *application.yml* IP and port of Kafka's brokers are set (see above):
+```yml
+  spring:
+    cloud:
+      stream:
+        kafka:
+          binder:
+            brokers: 10.10.33.22
+            defaultBrokerPort: 9092
+            zkNodes: 10.10.33.22
+```
 
 ### Stream Processing ###
 
