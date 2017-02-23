@@ -1,18 +1,22 @@
 # **pageviews**
 A technology demonstrator for the "Big Data Engineering" course at Hochschule Karlsruhe.
 
-We set up a small cluster of virtual machines and execute a small example job on them. We generate virtual data to simulate pageviews on a non-existing webserver and process this data with Batch and Stream processing. Technologies used are:
-* Vagrant and Puppet
-* Zookeeper, Hadoop, Cassandra, Spark and Storm
-* Spring projects
+This project contains a small cluster of virtual machines and small jobs to be executed on them with batch and stream processing. The input data is being randomly generated to simulate pageviews on a webserver. Technologies used are:
+* Virtualbox, Vagrant and Puppet
+* Zookeeper, Kafka, Hadoop, Cassandra, Spark and Storm
+* Spring projects (Spring Cloud, Stream, ...)
 
 
 # **PREPARATIONS** #
 All programs are currently (February 2017) available for MacOS, Windows and GNU/Linux. I only provide the GNU/Linux commands in this file. Installation on other platforms can obviously deviate.
 
-I recommend getting the latest official version at the projects' homepages. Versions installed via the system's package manager can obviously deviate. The software version used during the creation of this project are indicated within the respective sections.
+I recommend getting the latest official version at the projects' homepages. Versions installed via the system's package manager can obviously deviate. The software versions used during the creation of this project are indicated within the respective sections.
 
-## Installation ##
+## Software Installation ##
+**Virtualbox**
+[virtualbox.org](https://www.virtualbox.org)
+Version used during development: 5.1.14
+
 **Vagrant**
 [vagrantup.com](https://www.vagrantup.com)
 Version used during development: 1.9.1
@@ -22,23 +26,27 @@ Vagrant can be installed via Ruby's gem (if present on your machine):
 gem install vagrant
 ```
 
-**Virtualbox**
-[virtualbox.org](https://www.virtualbox.org)
-Version used during development: 5.1.14
+**Puppet**
+[puppet.com](https://puppet.com/)
+Version used during development: 4.8.2
 
-Binaries for the common platforms are available at the homepage. Compare version numbers when installing via a system's package manager.
+**Maven**
+[maven.apache.org](https://maven.apache.org/)
+Version used during development: 3.3.9
+
+Binaries and sources can be downloaded from the given homepage. An installation via a system's package manager usually works fine.
+
+
 
 ## VM ##
 ### Setup ###
-<!-- TODO: shared directory benötigt? -->
-* Move the *Vagrantfile* in the project's root directory.
-* Create a sub directory called *guestData* (for shared data between host and guest system)
-* If you are behind a proxy, follow the instructions in the following section *Proxy*
-* start the virtual machine (via terminal from within the root directory)
+* If you enabled the shared directory between a guest and the host system, create the respective sub directory
+* If you are behind a proxy, follow the instructions in the following section *Proxy* first
+* Start the virtual machine (via terminal from within the root directory which contains the *Vagrantfile*) :
 ```bash
 vagrant up
 ```
-The first start will take a few minutes, the image has to be downloaded and the machine set up.
+The first start will take a few minutes, all necessary files such as the OS images and all other programs have to be downloaded and the machines need to be set up.
 
 #### Proxy ####
 If you are behind a proxy, set an environment variable:
@@ -51,40 +59,35 @@ The virtual machine will need the vagrant plugin *proxyconf* to connect through 
 vagrant plugin install vagrant-proxyconf
 ```
 
-The *Vagrantfile* has to be edited accordingly:
+The *Vagrantfile* has to be edited accordingly (simply uncomment and edit the given lines according to your needs):
 ```ruby
 config.proxy.http     = "http://USER:PASSWORD@PROXY_URL:PORT/"
 config.proxy.https    = "http://USER:PASSWORD@PROXY_URL:PORT/"
 config.proxy.no_proxy = "localhost,127.0.0.1"
 ```
 
-## Spring / Project ##
-<!-- TODO -->
-
-
-
 
 # USAGE #
 ## VM Controls ##
-The VM has to be re-started every time the host had powered off. Besides that one, several other commands are available in order to control the VM via vagrant.
+The *Vagrantfile* contains multiple virtual machines. Some of the commands need the name of a specific machine to work (like *vagrant ssh*) and some can be called without any specified name and are then executed for all machines inside the *Vagrantfile* (like *vagrant up*). The machines need to be re-started every time the host had powered off. Besides that one, several other commands are available in order to control the VM via vagrant.
 
-Start the VM:
+Start the VMs:
 ```bash
-vagrant up
+vagrant up [NAME optional]
 ```
-Suspend or shut the VM down:
+Suspend or shut the VMs down:
 ```bash
-vagrant suspend
-vagrant halt
+vagrant suspend [NAME optional]
+vagrant halt [NAME optional]
 ```
-Reload the machine (e.g. in connection with *--provision* to re-execute the provisioning scripts (see section *Puppet* below)):
+Restart the machines (e.g. in connection with *--provision* to re-execute the provisioning scripts (see section *Puppet* below)):
 ```bash
-vagrant reload
+vagrant reload [NAME optional]
 ```
 
-Access the VM via SSH:
+Access the VM *NAME* via SSH:
 ```bash
-vagrant ssh
+vagrant ssh NAME
 ```
 Leave the SSH environment on the VM via *CTRL-D* or one of the following:
 ```bash
@@ -92,21 +95,16 @@ logout
 exit
 ```
 
-Delete the VM (including all used files except the box's base-image):
+Delete the VMs (including all used files except the box's base-image):
 ```bash
-vagrant destroy
+vagrant destroy [NAME optional]
 ```
-
-## Spring Project ##
-<!-- TODO -->
-
-
 
 # **DEVELOPMENT** #
 ## **Virtual Environment** ##
-During this project we decided to use Vagrant combined with Puppet and therefore base the setup of the virtual environment on a *"description"*  rather than creating a big pre-configured binary VM file. Keeping in mind, that we want to be able to distribute it as easy as possible among users - namely students of the course at Hochschule Karlsruhe.
+During this project's course the decision was met to use Vagrant combined with Puppet and therefore base the setup of the virtual environment on a *description* rather than creating a big pre-filled binary file for the VM - keeping in mind that the project aims towards being able to be distributed as easy as possible to the students.
 
-Vagrant creates the virtual machines and performs a few initial configurations while Puppet takes care of any further machine configuration in detail including the installation of all used software components.
+Vagrant creates the virtual machines and performs the basic initial configurations while Puppet takes care of any further machine configuration in detail including the installation of all used software components.
 
 The following setup will be achieved by executing the vagrant and puppet scripts:
 <!-- TODO: create, upload and link image -->
@@ -115,7 +113,7 @@ The following setup will be achieved by executing the vagrant and puppet scripts
 ### **Vagrant** ###
 The initial steps of the setup are being described within the *Vagrantfile* in the rootdirectory:
 
-The virtualmachine will run on a so called *box* whose base image will be pulled automatically from a central repository, if not present already:
+All virtual machines will run on a so called *box* which is a base image that will be pulled automatically from a central repository (if not present already):
 ```ruby
 config.vm.box = "ubuntu/trusty64"
 ```
@@ -127,18 +125,10 @@ config.vm.provider "virtualbox" do |vb|
 end
 ```
 
-All further setup, so called provisioning of the machines will be left to puppet:
-```ruby
-config.vm.provision :puppet do |puppet|
-  puppet.manifests_path = "puppet/manifests"
-  puppet.manifest_file = "example-machine.pp"
-  puppet.module_path = "puppet/modules"
-end
-```
+All further setup, the so called provisioning of the machines will be left to puppet.
 
 ### **Puppet** ###
-In this setup every machine has its own separate manifest-file and accesses different modules (some are shared, some only used by one machine). The separate machines are created and their puppet configuration individually set:
-
+In this setup every machine has its own separate manifest-file and accesses different modules (some of which are shared, some only used by one machine). The separate machines are created and their puppet configuration is set individually:
 ```ruby
 config.vm.define "machine01" do |mach01|
   # enable provisioning via puppet
@@ -150,7 +140,7 @@ config.vm.define "machine01" do |mach01|
 end
 ```
 
-Below the specified module_path subdirectories for those separate modules can be created. The following scheme is being used:
+Below the specified module_path subdirectories for those separate modules are created. The following scheme is being used:
 ```
   puppet
   |
@@ -171,34 +161,49 @@ Below the specified module_path subdirectories for those separate modules can be
           | ...
 ```
 
-#### Hadoop-Modul ####
+#### Hadoop ####
+In this scope a single machine cluster is used for hadoop to run on. The Hadoop master only needs java to be installed beforehand in order to run. The full documentation for this setup can be found here: [Hadoop Single Cluster](https://hadoop.apache.org/docs/r2.7.3/hadoop-project-dist/hadoop-common/SingleCluster.html). The version matches the one specified in the manifest for the hadoop machine.
 
+SSH is configured before setting up hadoop so that it does not perform strict host checking or asks for the adding of unknown hosts since the hadoop scripts are supposed to run headless without any user interaction. These settings are needed for this demo's purpose, but would be unfitting for any other environment than the one at hand!
 
-<!--
-https://hadoop.apache.org/docs/r2.7.3/hadoop-project-dist/hadoop-common/SingleCluster.html
+During the setup of the hadoop machine the following steps are performed:
+* Install Java
+* Download and unpack Hadoop
+* Create or replace settings files
+  * set JAVA_HOME
+  * set filesystem replication to 1 and make it accessible on port **9000**
+  * make the map/reduce job tracker accessible via port **9001**
+  * format the HDFS file system
+  * start the NameNode and DataNode daemons
+  * create the HDFS directories needed for any map/reduce jobs
+  * create cron jobs for the Node daemons, so they start automatically every time the machine boots
 
-web access: http://localhost:50070
+The status of the NameNode can be viewed via the web interface on [localhost:50070](http://localhost:50070).
 
-if connection fails check if hadoop is listening:
+If the connection to hadoop fails, ssh into the machine and check whether hadoop is listening:
+```bash
   $ netstat -anlp | grep LISTEN
--->
-
+```
 
 #### Kafka-Modul ####
+Kafka also runs on a single node in this setup. The basic instructions for this can be found here: [Kafka Single Node](https://kafka.apache.org/quickstart). Java and Scala need to be installed beforehand. The Scala version is important for the choice of the Kafka version so it is downloaded from the project's homepage explicitely instead of using the system's package manager.
 
-https://kafka.apache.org/quickstart
+This node receives its own private network IP, so that the stream can be accessed from the host system. Using *localhost* leads to undesired behaviour, such as error and warning outputs (although most actions can be performed successfully nonetheless):
+```ruby
+  kfk.vm.network "private_network", ip: "10.10.33.22"
+```
 
-* set private network IP (to not use "localhost, which is buggy sometimes")
-* run both in daemon mode
+Kafka's server settings also need to be edited, so that it will also accept connections from outside inside the *config/serer.properties*
+```
+  listeners=PLAINTEXT://0.0.0.0:9092
+```
 
-port zookeper: 2181
-port broker-list / kafka.network.acceptor (awaiting socket connections): 9092
+Kafka comes with a ready-to-use Zookeeper executable which is needed to run Kafka. In this scenario one Zookeeper server instance runs along with a Kafka server instance, both in daemon mode. Zookeeper will be accessible via the forwarded port **2181** and Kafka's broker list can be accessed on port **9092**. Those server daemons will also be started via cron every time the machine boots.
 
-kafka listen-server > server.properties > listen to all interfaces (listen=0.0.0.0 ...)
+<!--
+local test:
 
-* remote: use IP instead of localhost
-
-> cd /usr/share/kafka_***
+> cd /opt/kafka_***
 > bin/zookeeper-server-start.sh config/zookeeper.properties
 > bin/kafka-server-start.sh config/server.properties
 
@@ -207,7 +212,7 @@ kafka listen-server > server.properties > listen to all interfaces (listen=0.0.0
 
 > bin/kafka-console-producer.sh --broker-list localhost:9092 --topic test
 > bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic test --from-beginning
-
+-->
 
 #### Cassandra-Modul ####
 
