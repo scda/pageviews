@@ -25,6 +25,8 @@ Vagrant.configure("2") do |config|
 
   # https://www.vagrantup.com/docs/multi-machine/
   config.vm.define "hadoop_master" do |hdp|
+    # assign "local" ip
+    hdp.vm.network "private_network", ip: "10.10.33.11"
     # remap host port to guest port
     hdp.vm.network "forwarded_port", guest: 50070, host: 50070
 
@@ -38,8 +40,8 @@ Vagrant.configure("2") do |config|
 
   config.vm.define "kafka_node" do |kfk|
     kfk.vm.network "private_network", ip: "10.10.33.22"
-    kfk.vm.network "forwarded_port", guest: 2181, host:2181
-    kfk.vm.network "forwarded_port", guest: 9092, host:9092
+    kfk.vm.network "forwarded_port", guest: 2181, host: 2181
+    kfk.vm.network "forwarded_port", guest: 9092, host: 9092
 
     kfk.vm.provision :puppet do |puppet|
       puppet.manifests_path = "puppet/manifests"
@@ -49,6 +51,10 @@ Vagrant.configure("2") do |config|
   end
 
   config.vm.define "cassandra_seed" do |css|
+    css.vm.network "private_network", ip: "10.10.33.33"
+    css.vm.network "forwarded_port", guest: 7000, host: 7000
+    css.vm.network "forwarded_port", guest: 7001, host: 7001
+
     css.vm.provision :puppet do |puppet|
       puppet.manifests_path = "puppet/manifests"
       puppet.manifest_file = "cassandra-machine.pp"

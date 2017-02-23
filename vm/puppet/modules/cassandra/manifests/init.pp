@@ -42,7 +42,7 @@ class cassandra {
 	exec { "download_cassandra" :
 	command => "wget -O /tmp/cassandra.tar.gz http://mirror.netcologne.de/apache.org/cassandra/${cassandra_version}/apache-cassandra-${cassandra_version}-bin.tar.gz",
 		path => $path,
-		unless => "ls ${home_dir} | grep cassandra-${cassandra_version}",
+		unless => "ls ${home_dir} | grep apache-cassandra-${cassandra_version}",
 		require => Exec["keycopy"]
 	}
 	*/
@@ -50,7 +50,51 @@ class cassandra {
 	exec { "unpack_cassandra" :
 		command => "tar -zxf /tmp/cassandra.tar.gz -C ${home_dir}",
 		path => $path,
-		creates => "${home_dir}/cassandra-${cassandra_version}",
+		creates => "${home_dir}/apache-cassandra-${cassandra_version}",
 		require => Exec["download_cassandra"]
+	}
+
+	user { "cass-user" :
+		name => "cassandra",
+		ensure => present
+	}
+
+	file { "chown-home" :
+		path => "${home_dir}/apache-cassandra-${cassandra_version}",
+		owner => "cassandra",
+		ensure => directory,
+		recurse => true,
+		require => User["cass-user"],
+		before => Exec["start_cassandra"]
+	}
+
+	file { "var-lib" :
+		path => "/var/lib/cassandra",
+		ensure => directory,
+		owner => "cassandra",
+		require => User["cass-user"],
+		before => Exec["start_cassandra"]
+	}
+
+	file { "var-log" :
+		path => "/var/log/cassandra",
+		ensure => directory,
+		owner => "cassandra",
+		require => User["cass-user"],
+		before => Exec["start_cassandra"]
+	}
+
+	exec { "start_cassandra" :
+		command => "${home_dir}/apache-cassandra-${cassandra_version}/bin/cassandra",
+		require => Exec["unpack_cassandra"],
+		user => "cassandra"
+	}
+
+	cron { "cron-cassandra" :
+		command => "${home_dir}/apache-cassandra-${cassandra_version}/bin/cassandra -R",
+		user => "cassandra",
+		special => "reboot",
+		ensure => present,
+		require => Exec["unpack_cassandra"]
 	}
 }
