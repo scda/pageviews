@@ -13,8 +13,8 @@ All programs are currently (February 2017) available for MacOS, Windows and GNU/
 I recommend getting the latest official version at the projects' homepages. Versions installed via the system's package manager can obviously deviate. The software version used during the creation of this project are indicated within the respective sections.
 
 ## Installation ##
-**Vagrant**  
-[vagrantup.com](https://www.vagrantup.com)  
+**Vagrant**
+[vagrantup.com](https://www.vagrantup.com)
 Version used during development: 1.9.1
 
 Vagrant can be installed via Ruby's gem (if present on your machine):
@@ -22,8 +22,8 @@ Vagrant can be installed via Ruby's gem (if present on your machine):
 gem install vagrant
 ```
 
-**Virtualbox**  
-[virtualbox.org](https://www.virtualbox.org)  
+**Virtualbox**
+[virtualbox.org](https://www.virtualbox.org)
 Version used during development: 5.1.14
 
 Binaries for the common platforms are available at the homepage. Compare version numbers when installing via a system's package manager.
@@ -137,7 +137,20 @@ end
 ```
 
 ### **Puppet** ###
-In this setup every machine has its own separate manifest-file and accesses different modules (some are shared, some only used by one machine). Below the specified module_path subdirectories for those separate modules can be created. The following scheme is being used:
+In this setup every machine has its own separate manifest-file and accesses different modules (some are shared, some only used by one machine). The separate machines are created and their puppet configuration individually set:
+
+```ruby
+config.vm.define "machine01" do |mach01|
+  # enable provisioning via puppet
+  mach01.vm.provision :puppet do |puppet|
+    puppet.manifests_path = "puppet/manifests"
+    puppet.manifest_file = "machine01.pp"
+    puppet.module_path = "puppet/modules"
+  end
+end
+```
+
+Below the specified module_path subdirectories for those separate modules can be created. The following scheme is being used:
 ```
   puppet
   |
@@ -159,13 +172,16 @@ In this setup every machine has its own separate manifest-file and accesses diff
 ```
 
 #### Hadoop-Modul ####
+
+
+<!--
 https://hadoop.apache.org/docs/r2.7.3/hadoop-project-dist/hadoop-common/SingleCluster.html
 
 web access: http://localhost:50070
 
 if connection fails check if hadoop is listening:
   $ netstat -anlp | grep LISTEN
-
+-->
 
 
 #### Kafka-Modul ####
@@ -212,60 +228,45 @@ https://spark.apache.org/streaming/
 ### Generator ###
 = Kafka producer
 
-direktes Projekt :  https://projects.spring.io/spring-kafka/
->> Teil von            http://cloud.spring.io/spring-cloud-stream/
-Teil von            Sphttp://projects.spring.io/spring-cloud/
+ http://cloud.spring.io/spring-cloud-stream/
 
 
-** set IP and ports accordingly
+** set IP and ports accordingly !
 
 
+### Stream Processing ###
 
-https://projects.spring.io/spring-kafka/
-https://spring.io/blog/2015/04/15/using-apache-kafka-for-integration-and-data-processing-pipelines-with-spring
-https://msvaljek.blogspot.de/2015/12/stream-processing-with-spring-kafka_44.html
-
-
-### Verarbeitung ... ? ###
+### Batch Processing ###
 
 
 <!--
 # TODO #
 ## up next ##
-* Dokumentation der einzelnen Maschinen/Module ;)
 * understand apache cassandra
-* generator to write to kafka (spring kafka / spring stream kafka ?)
 * startup scripts
   * start hadoop daemons (hadoop - start-all?)
-  * start kafka + zookeeper
 
 ## VM ##
 * multinode (3)
   ✔ 1x hadoop master
-  ❌❌❌* 1x zookeeper
-  ✔ 1x kafka
+  ✔ 1x zookeeper + kafka
   ✔ cassandra seed
-  * spark stream
-  * storm batch
-* Datenbank als Output für vorberechnete Daten (cass)
+  ❌ spark stream
+  ❌ storm batch
 * Datenstream in Kafka füttern
   * rechts raus holen und in HDFS schreiben
   * links "normales" stream
 
 ### Fragen ###
-* Wie kommen die Nachrichten zu Kafka und Zookeper (Input) - gibt es ein Spring Kafka "Plugin"?
 * Technologie-Lookup (stream processing):
   * apache beam for google data flow
   * flink
 
 ## Beispielprojekt ##
-* Generator URL Logs (in Kafka schreiben)
 * Maven Projekt Spring Cloud Data Flow
   * Szenario Web Analytics (Clickstream Analyse mit Pageviews pro Zeitintervall)
   * Programmierung außerhalb
   * Job starten mit lokalen Daten und auf "virtueller remote hadoop" ausführen (java Dateien auf remote hadoop ausführen, ohne die Dateien direkt auf das Dateisystem der virtuellen Maschine ablegen zu müssen?)
-
-
 
 # SOURCES #
 ## actual work with hadoop ##
@@ -279,7 +280,7 @@ https://msvaljek.blogspot.de/2015/12/stream-processing-with-spring-kafka_44.html
 # Alte Anmkerungen #
 evtl. für die Doku noch relevant ... (?)
 * Pig und Hive veraltet
-* Spring Cloud Data FLow Plattform scheinbar zu abstrakt
+* Spring Cloud Data FLow Plattform scheinbar zu abstrakt (web interface und custom CommandLineInterface mit spezifischen Funktionen)
   * https://www.youtube.com/watch?v=L6p1pzGgadA
   * http://cloud.spring.io/spring-cloud-dataflow/
     * http://localhost:9393/dashboard
