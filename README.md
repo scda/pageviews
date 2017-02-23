@@ -161,6 +161,8 @@ Below the specified module_path subdirectories for those separate modules are cr
           | ...
 ```
 
+The Documentation for all Puppet Resource Types can be found here: [Puppet Reference](https://docs.puppet.com/puppet/4.8/type.html)
+
 #### Hadoop ####
 In this scope a single machine cluster is used for hadoop to run on. The Hadoop master only needs java to be installed beforehand in order to run. The full documentation for this setup can be found here: [Hadoop Single Cluster](https://hadoop.apache.org/docs/r2.7.3/hadoop-project-dist/hadoop-common/SingleCluster.html). The version matches the one specified in the manifest for the hadoop machine.
 
@@ -215,12 +217,16 @@ local test:
 -->
 
 #### Cassandra-Modul ####
+Cassandra runs on a single node as well. Cassandra requires Java (JDK 8) and Python (curently 2.7) to be installed before going to work. The steps for a basic setup can be found here: [Cassandra Setup](https://cassandra.apache.org/doc/latest/getting_started/installing.html#installation-from-binary-tarball-files)
 
-https://cassandra.apache.org/
+Running the application as root user is not recommended and will most likely lead to errors. Therefore the user *cassandra* is created and starts the service. For this to run after every boot a cron job is set up. For this reason one *cassandra* directory is created inside */var/lib/* and */var/log* each. *cassandra* is assigned as owner of the created directories and also the applications home directory (where it was unpacked to).
 
-https://cassandra.apache.org/doc/latest/getting_started/installing.html#installation-from-binary-tarball-files
+<!-- https://www.digitalocean.com/community/tutorials/how-to-install-cassandra-and-run-a-single-node-cluster-on-a-ubuntu-vps -->
 
-bin/cassandra -R (-R for root) (alternativ evtl data/ und logs/ sub-dirs erstellen und dann ohne superuser starten)
+<!-- TODO
+evtl. listen Adresse ändern, damit von außen auf cass zugegriffen werden kann (bisher nicht getestet)
+-->
+
 
 
 #### Spark-Modul ####
