@@ -187,8 +187,10 @@ If the connection to hadoop fails, ssh into the machine and check whether hadoop
   $ netstat -anlp | grep LISTEN
 ```
 
-#### Kafka-Modul ####
-Kafka also runs on a single node in this setup. The basic instructions for this can be found here: [Kafka Single Node](https://kafka.apache.org/quickstart). Java and Scala need to be installed beforehand. The Scala version is important for the choice of the Kafka version so it is downloaded from the project's homepage explicitely instead of using the system's package manager.
+#### Kafka ####
+Kafka is a distributed message broker for real-time data feeds with high throughput. In this setup it will run on a single node for the sake of simplicity. Kafka depends on Apache Zookeeper, a distributed configuration and synchronization service. Zookeeper stores information about topics, brokers, consumers etc. for Kafka.
+
+An instruction for a basic setup can be found here: [Kafka Single Node](https://kafka.apache.org/quickstart). Java and Scala need to be installed beforehand. The Scala version is important for the choice of the Kafka version so it is downloaded from the project's homepage explicitely instead of using the system's package manager.
 
 This node receives its own private network IP, so that the stream can be accessed from the host system. Using *localhost* leads to undesired behaviour, such as error and warning outputs (although most actions can be performed successfully nonetheless):
 ```ruby
@@ -216,7 +218,7 @@ local test:
 > bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic test --from-beginning
 -->
 
-#### Cassandra-Modul ####
+#### Cassandra ####
 Cassandra runs on a single node as well. Cassandra requires Java (JDK 8) and Python (curently 2.7) to be installed before going to work. The steps for a basic setup can be found here: [Cassandra Setup](https://cassandra.apache.org/doc/latest/getting_started/installing.html#installation-from-binary-tarball-files)
 
 Running the application as root user is not recommended and will most likely lead to errors. Therefore the user *cassandra* is created and starts the service. For this to run after every boot a cron job is set up. For this reason one *cassandra* directory is created inside */var/lib/* and */var/log* each. *cassandra* is assigned as owner of the created directories and also the applications home directory (where it was unpacked to).
@@ -229,7 +231,8 @@ evtl. listen Adresse ändern, damit von außen auf cass zugegriffen werden kann 
 
 
 
-#### Spark-Modul ####
+#### Storm ####
+
 https://spark.apache.org/streaming/
 
 
@@ -281,23 +284,30 @@ Inside the *application.yml* IP and port of Kafka's brokers are set (see above):
 <!--
 # TODO #
 ## up next ##
-* cassandra node
+* README ausbauen:
+  * wofür sind die einzelnen Programme gut?
+  * wie/wo werden sie in dieser Konstellation eingesetzt?
+
 * hadoop
   * read from kafka
   * put to HDFS
-  * batch in some way
-
+  * batch process
+* storm
+  * read from kafka
+  * process
+  * write to cassandra
+  https://endocode.com/blog/2015/04/08/building-a-stream-processing-pipeline-with-kafka-storm-and-cassandra-part-1-introducing-the-components/
+  https://storm.apache.org/releases/current/Tutorial.html
+  https://storm.apache.org/releases/current/Setting-up-development-environment.html
+  https://storm.apache.org/releases/current/Creating-a-new-Storm-project.html
 
 ## VM ##
 * multinode (3)
   ✔ 1x hadoop master
   ✔ 1x zookeeper + kafka
   ✔ cassandra seed
-  ❌ spark stream
-  ❌ storm batch
-* Datenstream in Kafka füttern
-  * rechts raus holen und in HDFS schreiben
-  * links "normales" stream
+  ❌ spark (batch)
+  ❌ storm (stream)
 
 ### Fragen ###
 * Technologie-Lookup (stream processing):
