@@ -163,7 +163,7 @@ Below the specified module_path subdirectories for those separate modules are cr
 
 The Documentation for all Puppet Resource Types can be found here: [Puppet Reference](https://docs.puppet.com/puppet/4.8/type.html)
 
-#### Hadoop ####
+#### Hadoop Machine ####
 In this scope a single machine cluster is used for hadoop to run on. The Hadoop master only needs java to be installed beforehand in order to run. The full documentation for this setup can be found here: [Hadoop Single Cluster](https://hadoop.apache.org/docs/r2.7.3/hadoop-project-dist/hadoop-common/SingleCluster.html). The version matches the one specified in the manifest for the hadoop machine.
 
 SSH is configured before setting up hadoop so that it does not perform strict host checking or asks for the adding of unknown hosts since the hadoop scripts are supposed to run headless without any user interaction. These settings are needed for this demo's purpose, but would be unfitting for any other environment than the one at hand!
@@ -187,7 +187,26 @@ If the connection to hadoop fails, ssh into the machine and check whether hadoop
   $ netstat -anlp | grep LISTEN
 ```
 
-#### Kafka ####
+<!--
+flume guides:
+  http://howtoprogram.xyz/2016/08/06/apache-flume-kafka-source-and-hdfs-sink/
+  https://flume.apache.org/FlumeUserGuide.html
+
+needed before:
+  -Dflume.root.logger=INFO,console
+run flume:
+  /opt/apache-flume-1.7.0-bin/bin/flume-ng agent --conf /opt/apache-flume-1.7.0-bin/conf -conf-file /opt/apache-flume-1.7.0-bin/conf/flume-kafka-source-hdfs-sink.conf --name agent1
+optional:
+  export HADOOP_HOME=/opt/hadoop-2.7.3
+
+
+CHECK HADOOP:
+  bin/hadoop fs -ls  hdfs://localhost:9000/
+  > sollte mehr als nur /user sein
+
+-->
+
+#### Kafka Machine ####
 Kafka is a distributed message broker for real-time data feeds with high throughput. In this setup it will run on a single node for the sake of simplicity. Kafka depends on Apache Zookeeper, a distributed configuration and synchronization service. Zookeeper stores information about topics, brokers, consumers etc. for Kafka.
 
 An instruction for a basic setup can be found here: [Kafka Single Node](https://kafka.apache.org/quickstart). Java and Scala need to be installed beforehand. The Scala version is important for the choice of the Kafka version so it is downloaded from the project's homepage explicitely instead of using the system's package manager.
@@ -211,12 +230,15 @@ local test:
 > bin/zookeeper-server-start.sh config/zookeeper.properties
 > bin/kafka-server-start.sh config/server.properties
 
-> bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 1 --topic test
+> bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 1 --topic output
 > bin/kafka-topics.sh --list --zookeeper localhost:2181
 
-> bin/kafka-console-producer.sh --broker-list localhost:9092 --topic test
-> bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic test --from-beginning
+> bin/kafka-console-producer.sh --broker-list localhost:9092 --topic output
+> bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic output --from-beginning
 -->
+
+
+
 
 #### Cassandra ####
 Cassandra runs on a single node as well. Cassandra requires Java (JDK 8) and Python (curently 2.7) to be installed before going to work. The steps for a basic setup can be found here: [Cassandra Setup](https://cassandra.apache.org/doc/latest/getting_started/installing.html#installation-from-binary-tarball-files)
@@ -289,14 +311,12 @@ Inside the *application.yml* IP and port of Kafka's brokers are set (see above):
   * wie/wo werden sie in dieser Konstellation eingesetzt?
 
 * hadoop
-  * read from kafka
-  * put to HDFS
-  * batch process
-* storm
+  * read from kafka and put to HDFS (apache flume) - http://howtoprogram.xyz/2016/08/06/apache-flume-kafka-source-and-hdfs-sink/
+  * batch process (map/reduce)
+* storm (HERON?)
   * read from kafka
   * process
-  * write to cassandra
-  https://endocode.com/blog/2015/04/08/building-a-stream-processing-pipeline-with-kafka-storm-and-cassandra-part-1-introducing-the-components/
+  * write to cassandra  https://endocode.com/blog/2015/04/08/building-a-stream-processing-pipeline-with-kafka-storm-and-cassandra-part-1-introducing-the-components/
   https://storm.apache.org/releases/current/Tutorial.html
   https://storm.apache.org/releases/current/Setting-up-development-environment.html
   https://storm.apache.org/releases/current/Creating-a-new-Storm-project.html
@@ -324,16 +344,24 @@ Inside the *application.yml* IP and port of Kafka's brokers are set (see above):
 ## actual work with hadoop ##
   https://www.petrikainulainen.net/programming/apache-hadoop/creating-hadoop-mapreduce-job-with-spring-data-apache-hadoop/
 
-## Spark ##
-  http://www.michael-noll.com/blog/2014/10/01/kafka-spark-streaming-integration-example-tutorial/
+
+### FINISH UP ###
+* remove comments from README
+* remove "local test" sections from init.pp's and activate "real downloads"
+* remove tar.gz files etc. from puppet directories
 
 
 
-# Alte Anmkerungen #
+# Anmerkungen zu verworfenem #
 evtl. für die Doku noch relevant ... (?)
 * Pig und Hive veraltet
 * Spring Cloud Data FLow Plattform scheinbar zu abstrakt (web interface und custom CommandLineInterface mit spezifischen Funktionen)
   * https://www.youtube.com/watch?v=L6p1pzGgadA
+  * EXAMPLE: https://github.com/spring-cloud/spring-cloud-dataflow-samples/tree/master/analytics/twitter-analytics
   * http://cloud.spring.io/spring-cloud-dataflow/
     * http://localhost:9393/dashboard
+* spark
+  * schneller als hadoop map/reduce (aber eigentlich nicht benötigt) > deshalb erst mal hadoop
+  * http://www.michael-noll.com/blog/2014/10/01/kafka-spark-streaming-integration-example-tutorial/
+
 -->
