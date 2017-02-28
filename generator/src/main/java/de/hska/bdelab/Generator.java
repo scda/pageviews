@@ -17,7 +17,7 @@ public class Generator {
 
 	}
 	
-	@InboundChannelAdapter(value = Source.OUTPUT, poller = @Poller(fixedDelay = "5000", maxMessagesPerPoll = "1"))
+	@InboundChannelAdapter(value = Source.OUTPUT, poller = @Poller(fixedDelay = "1000", maxMessagesPerPoll = "1"))
 	public String pageviewMessageSource()  {		
 		return (GenerateTimestamp() + "," + GenerateIp() + "," + GenerateUri() + "," + GenerateUid());
 	}

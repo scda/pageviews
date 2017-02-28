@@ -187,22 +187,36 @@ If the connection to hadoop fails, ssh into the machine and check whether hadoop
   $ netstat -anlp | grep LISTEN
 ```
 
+
+
+
 <!--
 flume guides:
   http://howtoprogram.xyz/2016/08/06/apache-flume-kafka-source-and-hdfs-sink/
   https://flume.apache.org/FlumeUserGuide.html
+  > unterstützt nur kafka 0.9.x bisher !!
 
 needed before:
-  -Dflume.root.logger=INFO,console
-run flume:
-  /opt/apache-flume-1.7.0-bin/bin/flume-ng agent --conf /opt/apache-flume-1.7.0-bin/conf -conf-file /opt/apache-flume-1.7.0-bin/conf/flume-kafka-source-hdfs-sink.conf --name agent1
-optional:
+  // set "systemwide" for all users !
   export HADOOP_HOME=/opt/hadoop-2.7.3
+run flume:
+    /opt/apache-flume-1.7.0-bin/bin/flume-ng agent --conf /opt/apache-flume-1.7.0-bin/conf -conf-file /opt/apache-flume-1.7.0-bin/conf/flume-kafka-source-hdfs-sink.conf --name agent1
 
+    bin/flume-ng agent --conf conf -conf-file conf/flume-kafka-source-hdfs-sink.conf --name agent1 -Dflume.root.logger=INFO,console
+
+  DEBUG:
+    bin/flume-ng agent --conf conf -conf-file conf/test-kafka.conf --name agent1 -Dflume.root.logger=INFO,console
+
+
+end flume (forcefully):
+  ps -ef|grep flume
+  kill -9 pid
 
 CHECK HADOOP:
-  bin/hadoop fs -ls  hdfs://localhost:9000/
-  > sollte mehr als nur /user sein
+  bin/hadoop fs -ls  hdfs://10.10.33.11:9000/
+  > neue directories werden automatisch angelegt, müssen nicht vor-formatiert werden.
+
+
 
 -->
 
@@ -306,12 +320,16 @@ Inside the *application.yml* IP and port of Kafka's brokers are set (see above):
 <!--
 # TODO #
 ## up next ##
+* hadoop node:
+  * environment variable hadoop-home setzen (root user)
+  * flume-ng muss von root gestartet werden, wenn auf hdfs:/user/root schreiben will
+  * cronjob für hadoop-daemons funktioniert irgendwie nicht ... fehler suchen!
+
 * README ausbauen:
   * wofür sind die einzelnen Programme gut?
   * wie/wo werden sie in dieser Konstellation eingesetzt?
 
 * hadoop
-  * read from kafka and put to HDFS (apache flume) - http://howtoprogram.xyz/2016/08/06/apache-flume-kafka-source-and-hdfs-sink/
   * batch process (map/reduce)
 * storm (HERON?)
   * read from kafka

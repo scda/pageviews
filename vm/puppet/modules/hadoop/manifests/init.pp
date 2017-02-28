@@ -110,5 +110,4 @@ class hadoop {
     ensure => present,
     require => Exec["unpack_hadoop"]
 	}
-
 }

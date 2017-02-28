@@ -33,7 +33,6 @@ class cassandra {
 	exec { "download_cassandra" :
 		command => "echo 0",
 		path => $path,
-		unless => "ls /tmp | grep cassandra.tar.gz",
 		require => Exec["removeknownhosts"]
 	}
 	## END local test
@@ -51,12 +50,13 @@ class cassandra {
 		command => "tar -zxf /tmp/cassandra.tar.gz -C ${home_dir}",
 		path => $path,
 		creates => "${home_dir}/apache-cassandra-${cassandra_version}",
-		require => Exec["download_cassandra"]
+		require => File["/tmp/cassandra.tar.gz"]
 	}
 
 	user { "cass-user" :
 		name => "cassandra",
-		ensure => present
+		ensure => present,
+		require => Exec["unpack_cassandra"]
 	}
 
 	file { "chown-home" :

@@ -2,7 +2,7 @@ class kafka {
 	$home_dir = "/opt"
   $scala_version_major = "2.11"
 	$scala_version_minor = "8"
-	$kafka_version = "0.10.1.1"
+	$kafka_version = "0.9.0.1"
 
   ## BEGIN local test
   file {
@@ -18,7 +18,7 @@ class kafka {
   }
 	file {
     "/tmp/kafka.tar.gz":
-    source => "puppet:///modules/kafka/kafka_2.11-0.10.1.1.tgz",
+    source => "puppet:///modules/kafka/kafka_2.11-0.9.0.1.tgz",
     before => Exec["download_kafka"]
   }
   exec { "download_kafka" :
@@ -37,7 +37,7 @@ class kafka {
     require => Exec["keycopy"]
   }
 	exec { "download_kafka" :
-	  command => "wget -O /tmp/kafka.tar.gz http://mirror.yannic-bonenberger.com/apache/kafka/${kafka_version}/kafka_${scala_version_major}-${kafka_version}.tgz",
+	  command => "wget -O /tmp/kafka.tar.gz http://mirrors.ae-online.de/apache/kafka/${kafka_version}/kafka_${scala_version_major}-${kafka_version}.tgz",
     path => $path,
     unless => "ls ${home_dir} | grep kafka_${scala_version_major}-${kafka_version}",
     require => Exec["keycopy"]

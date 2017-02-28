@@ -53,7 +53,7 @@ class flume {
   }
 
 	exec {"start-flume" :
-		command => "${home_dir}/apache-flume-${flume_version}-bin/bin/flume-ng agent --conf ${home_dir}/apache-flume-${flume_version}-bin/conf -conf-file ${home_dir}/apache-flume-${flume_version}-bin/conf/flume-kafka-source-hdfs-sink.conf --name agent1",
+		command => "${home_dir}/apache-flume-${flume_version}-bin/bin/flume-ng agent --conf ${home_dir}/apache-flume-${flume_version}-bin/conf -conf-file ${home_dir}/apache-flume-${flume_version}-bin/conf/flume-kafka-source-hdfs-sink.conf --name agent1 &",
 		require => [ Exec["unpack_flume"], Exec["dfs_directories_2"] ],
 		timeout => 30
 	}
