@@ -85,7 +85,7 @@ class hadoop {
     before => Exec["start_daemons"]
   }
 
-  exec { "start_daemons" :
+  exec { "start_hdpdaemons" :
     command => "${hadoop_home}-${hadoop_version}/sbin/start-dfs.sh",
     path => $path,
     require => Exec["unpack_hadoop"]
@@ -94,7 +94,7 @@ class hadoop {
   exec { "dfs_directories_1" :
     command => "${hadoop_home}-${hadoop_version}/bin/hdfs dfs -mkdir /user",
     path => $path,
-    require => Exec["start_daemons"],
+    require => Exec["start_hdpdaemons"],
   }
 
   exec { "dfs_directories_2" :
@@ -110,4 +110,10 @@ class hadoop {
     ensure => present,
     require => Exec["unpack_hadoop"]
 	}
+
+  exec {"set_hadoop_home" :
+    command => "echo 'HADOOP_HOME=${hadoop_home}-${hadoop_version}' >> /etc/environment",
+    path => $path,
+    user => "root"
+  }
 }

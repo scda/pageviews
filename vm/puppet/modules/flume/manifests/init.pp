@@ -54,8 +54,16 @@ class flume {
 
 	exec {"start-flume" :
 		command => "${home_dir}/apache-flume-${flume_version}-bin/bin/flume-ng agent --conf ${home_dir}/apache-flume-${flume_version}-bin/conf -conf-file ${home_dir}/apache-flume-${flume_version}-bin/conf/flume-kafka-source-hdfs-sink.conf --name agent1 &",
-		require => [ Exec["unpack_flume"], Exec["dfs_directories_2"] ],
+		require => [ Exec["unpack_flume"], Exec["start_hdpdaemons"] ],
 		timeout => 30
+	}
+
+	cron { "cron-flume" :
+    command => "${home_dir}/apache-flume-${flume_version}-bin/bin/flume-ng agent --conf ${home_dir}/apache-flume-${flume_version}-bin/conf -conf-file ${home_dir}/apache-flume-${flume_version}-bin/conf/flume-kafka-source-hdfs-sink.conf --name agent1 &",
+    user => "root",
+    special => "reboot",
+    ensure => present,
+    require => Exec["unpack_flume"] 
 	}
 
 }
