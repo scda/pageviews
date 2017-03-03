@@ -8,9 +8,7 @@ This project contains a small cluster of virtual machines and small jobs to be e
 
 
 # **PREPARATIONS** #
-All programs are currently (February 2017) available for MacOS, Windows and GNU/Linux. I only provide the GNU/Linux commands in this file. Installation on other platforms can obviously deviate.
-
-I recommend getting the latest official version at the projects' homepages. Versions installed via the system's package manager can obviously deviate. The software versions used during the creation of this project are indicated within the respective sections.
+All of the used software is currently (early 2017) available for MacOS, Windows and GNU/Linux and largely open source, meaning you should be able to download the sources and build them for your platform if there are no binaries available already. I recommend getting the latest official version at the projects' homepages. Versions installed via a system's package manager can obviously deviate. The software versions used during the creation of this project are indicated within the respective sections.
 
 ## Software Installation ##
 **Virtualbox**
@@ -21,11 +19,6 @@ Version used during development: 5.1.14
 [vagrantup.com](https://www.vagrantup.com)
 Version used during development: 1.9.1
 
-Vagrant can be installed via Ruby's gem (if present on your machine):
-```bash
-gem install vagrant
-```
-
 **Puppet**
 [puppet.com](https://puppet.com/)
 Version used during development: 4.8.2
@@ -34,27 +27,25 @@ Version used during development: 4.8.2
 [maven.apache.org](https://maven.apache.org/)
 Version used during development: 3.3.9
 
-Binaries and sources can be downloaded from the given homepage. An installation via a system's package manager usually works fine.
-
 
 
 ## VM ##
 ### Setup ###
 * If you enabled the shared directory between a guest and the host system, create the respective sub directory
-* If you are behind a proxy, follow the instructions in the following section *Proxy* first
+* If you are behind a proxy, follow the instructions in the section *Proxy* first
 * Start the virtual machine (via terminal from within the root directory which contains the *Vagrantfile*) :
 ```bash
 vagrant up
 ```
-The first start will take a few minutes, all necessary files such as the OS images and all other programs have to be downloaded and the machines need to be set up.
+The first start will take a few minutes, all necessary files such as the OS images and all other programs running inside the virtual machines have to be downloaded and the machines need to be set up.
 
 #### Proxy ####
-If you are behind a proxy, set an environment variable:
+Set an environment variable first:
 ```bash
 export HTTP_PROXY=http://USER:PASSWORD@PROXY_URL:PORT/
 ```
 
-The virtual machine will need the vagrant plugin *proxyconf* to connect through a proxy:
+The virtual machine will need the vagrant plugin *proxyconf* to connect through a proxy, which can be installed directly from the command line:
 ```bash
 vagrant plugin install vagrant-proxyconf
 ```
@@ -69,7 +60,7 @@ config.proxy.no_proxy = "localhost,127.0.0.1"
 
 # USAGE #
 ## VM Controls ##
-The *Vagrantfile* contains multiple virtual machines. Some of the commands need the name of a specific machine to work (like *vagrant ssh*) and some can be called without any specified name and are then executed for all machines inside the *Vagrantfile* (like *vagrant up*). The machines need to be re-started every time the host had powered off. Besides that one, several other commands are available in order to control the VM via vagrant.
+The *Vagrantfile* sets up multiple virtual machines. Some of the commands to control them need the name of a specific machine to work (like *vagrant ssh*) and some can be called without any specified name and are then executed for all machines inside the *Vagrantfile* (like *vagrant up*). The machines need to be re-started every time the host had powered off. The following list is only a selection of frequently needed commands.
 
 Start the VMs:
 ```bash
@@ -111,9 +102,9 @@ The following setup will be achieved by executing the vagrant and puppet scripts
 ![pageviews machine setup ](https://github.com/adam-p/markdown-here/raw/master/src/common/images/icon48.png "machine setup")
 
 ### **Vagrant** ###
-The initial steps of the setup are being described within the *Vagrantfile* in the rootdirectory:
+The initial steps of the setup are being described within the *Vagrantfile* in the root directory:
 
-All virtual machines will run on a so called *box* which is a base image that will be pulled automatically from a central repository (if not present already):
+All virtual machines will run a so called *box* which is the base image that will be pulled automatically from a central repository (if not present already):
 ```ruby
 config.vm.box = "ubuntu/trusty64"
 ```
@@ -138,9 +129,12 @@ config.vm.define "machine01" do |mach01|
     puppet.module_path = "puppet/modules"
   end
 end
+
+config.vm.define "machine02" do |mach02|
+[...]
 ```
 
-Below the specified module_path subdirectories for those separate modules are created. The following scheme is being used:
+Inside the specified module_path subdirectories for those separate modules are created. The following scheme is being used:
 ```
   puppet
   |
@@ -161,38 +155,46 @@ Below the specified module_path subdirectories for those separate modules are cr
           | ...
 ```
 
-The Documentation for all Puppet Resource Types can be found here: [Puppet Reference](https://docs.puppet.com/puppet/4.8/type.html)
+Puppet offers many different options that help the user to achieve the desired state of the targeted machine. The Documentation for all Puppet Resource Types can be found here: [Puppet Reference](https://docs.puppet.com/puppet/4.8/type.html)
 
-#### Hadoop Machine ####
-In this scope a single machine cluster is used for hadoop to run on. The Hadoop master only needs java to be installed beforehand in order to run. The full documentation for this setup can be found here: [Hadoop Single Cluster](https://hadoop.apache.org/docs/r2.7.3/hadoop-project-dist/hadoop-common/SingleCluster.html). The version matches the one specified in the manifest for the hadoop machine.
+#### Hadoop ####
+The Apache Hadoop software library focuses on reliable, scalable, distributed computing and the processing of large data sets.
 
-SSH is configured before setting up hadoop so that it does not perform strict host checking or asks for the adding of unknown hosts since the hadoop scripts are supposed to run headless without any user interaction. These settings are needed for this demo's purpose, but would be unfitting for any other environment than the one at hand!
+One component of Hadoop is HDFS, the Hadoop File System, which is a special distributed filesystem that will allow for big amounts of data to be written on an abstract file space. This filesystem stores the data that was read from the input stream before batch processing the received data with map/reduce jobs.
 
-During the setup of the hadoop machine the following steps are performed:
+In this scope a single machine "cluster" is used for Hadoop to run on. The Hadoop master only needs java to be installed in order to run. The full documentation for this setup can be found here: [Hadoop Single Cluster](https://hadoop.apache.org/docs/r2.7.3/hadoop-project-dist/hadoop-common/SingleCluster.html).
+
+SSH is configured before setting up Hadoop so that it will not perform strict host checking or ask for the adding of unknown hosts since the Hadoop scripts are supposed to run headless without any user interaction. These settings simplify the setup for this demo's purpose, but would be unfitting for any other environment since they create a serious security concern.
+
+During the setup of the Hadoop machine the following steps are performed:
 * Install Java
 * Download and unpack Hadoop
 * Create or replace settings files
   * set JAVA_HOME
   * set filesystem replication to 1 and make it accessible on port **9000**
   * make the map/reduce job tracker accessible via port **9001**
-  * format the HDFS file system
-  * start the NameNode and DataNode daemons
-  * create the HDFS directories needed for any map/reduce jobs
+  * format HDFS
+  * start the Name- and DataNode daemons
+  * create the first HDFS directories
   * create cron jobs for the Node daemons, so they start automatically every time the machine boots
 
 The status of the NameNode can be viewed via the web interface on [localhost:50070](http://localhost:50070).
 
-If the connection to hadoop fails, ssh into the machine and check whether hadoop is listening:
+If the connection to Hadoop fails, ssh into the machine and check whether Hadoop is listening:
 ```bash
   $ netstat -anlp | grep LISTEN
 ```
+### Flume ###
+Apache Flume aims to be a distributed service to collect, aggregate and move large amounts of data (usually used for logs) with a focus on streaming data flows. This is the second software component that resides on the same node as Hadoop in this setup.
 
+This application is redirecting data from an input ("source") via a buffer ("channel") to an output ("sink"). All of the three components there (source, channel and sink) can be configured to take on various forms. The input can be an input file, a data stream, a HTTP source and others. In this case we will use the connector to read from a kafka topic (the one where the generator put the simulated HTTP logs). The sink can also be configured in different ways. We will use it to write the data to the HDFS so that Hadoop can process it from there. The directories required for Flume's output do not need to be preformatted with Hadoop, but will be created on the HDFS dynamically. The current Flume version [1.7.0] restricts the kafka-version to [0.9.x] which is not the latest version but has so far not made a noticeable difference.
+
+<!-- TODO: config files from flume erklären + welche Schritte werden ausgeführt -->
 
 
 
 <!--
 flume guides:
-  http://howtoprogram.xyz/2016/08/06/apache-flume-kafka-source-and-hdfs-sink/
   https://flume.apache.org/FlumeUserGuide.html
   > unterstützt nur kafka 0.9.x bisher !!
 
@@ -221,17 +223,13 @@ CHECK HADOOP:
 -->
 
 #### Kafka Machine ####
-Kafka is a distributed message broker for real-time data feeds with high throughput. In this setup it will run on a single node for the sake of simplicity. Kafka depends on Apache Zookeeper, a distributed configuration and synchronization service. Zookeeper stores information about topics, brokers, consumers etc. for Kafka.
+Kafka is a distributed message broker for real-time data feeds with high throughput. In this setup it will run on a single node for the sake of simplicity. The very small amounts of data put in allow for this to work out well. Kafka depends on Apache Zookeeper, a distributed configuration and synchronization service. Zookeeper stores information about topics, brokers, consumers etc. for Kafka.
 
-An instruction for a basic setup can be found here: [Kafka Single Node](https://kafka.apache.org/quickstart). Java and Scala need to be installed beforehand. The Scala version is important for the choice of the Kafka version so it is downloaded from the project's homepage explicitely instead of using the system's package manager.
-
-This node receives its own private network IP, so that the stream can be accessed from the host system. Using *localhost* leads to undesired behaviour, such as error and warning outputs (although most actions can be performed successfully nonetheless):
-```ruby
-  kfk.vm.network "private_network", ip: "10.10.33.22"
+An instruction for a basic setup can be found here: [Kafka Single Node](https://kafka.apache.org/quickstart). Java and Scala need to be installed beforehand. The Scala version is important for the choice of the Kafka ver
 ```
 
 Kafka's server settings also need to be edited, so that it will also accept connections from outside inside the *config/serer.properties*
-```
+```properties
   listeners=PLAINTEXT://0.0.0.0:9092
 ```
 
@@ -255,9 +253,11 @@ local test:
 
 
 #### Cassandra ####
+Cassandra is a reliable distributed database system.
+
 Cassandra runs on a single node as well. Cassandra requires Java (JDK 8) and Python (curently 2.7) to be installed before going to work. The steps for a basic setup can be found here: [Cassandra Setup](https://cassandra.apache.org/doc/latest/getting_started/installing.html#installation-from-binary-tarball-files)
 
-Running the application as root user is not recommended and will most likely lead to errors. Therefore the user *cassandra* is created and starts the service. For this to run after every boot a cron job is set up. For this reason one *cassandra* directory is created inside */var/lib/* and */var/log* each. *cassandra* is assigned as owner of the created directories and also the applications home directory (where it was unpacked to).
+Running the application as root user is not recommended and will probably lead to errors. Therefore the user *cassandra* is created to start the service. For this service to run after every boot a cron job is set up. One *cassandra* directory is created inside */var/lib/* and */var/log* each. *cassandra* is assigned as owner of the created directories and also the applications home directory (where it was unpacked to).
 
 <!-- https://www.digitalocean.com/community/tutorials/how-to-install-cassandra-and-run-a-single-node-cluster-on-a-ubuntu-vps -->
 
@@ -317,21 +317,34 @@ Inside the *application.yml* IP and port of Kafka's brokers are set (see above):
 ### Batch Processing ###
 
 
-<!--
+
 # TODO #
 ## up next ##
+* generator:
+  * URL aus Liste auswählen
+  * random timer statt fester Zugriff
+  * TEST mit vorgegebener Liste von Zugriffen > damit Ergebnisse validiert werden können
+
+
+## after that ... #
 * hadoop node:
-  * environment variable hadoop-home setzen (root user)
-  * flume-ng muss von root gestartet werden, wenn auf hdfs:/user/root schreiben will
-  * cronjob für hadoop-daemons funktioniert irgendwie nicht ... fehler suchen!
+  * Fehlersuche cronjob hadoop-daemon
+  * Prüfen: cronjob flume-ng + environment var permanent? (reload ohne provisioning)
+  * sinnvolle "Aufteilung" für die Speicherung der Daten auf hdfs + Speicher(roll)-Intervalle setzen
+
+* map/reduce job
+  * URL Aufrufe pro Stunde
+  * cron: automatisch starten alle xy Zeitintervall
+  * in Cassandra schreiben
+    * erster key? (partition = url)
+    * range abfragen möglich machen? (damit zeitspannen ausgegeben werden können)
+  * https://www.petrikainulainen.net/programming/apache-hadoop/creating-hadoop-mapreduce-job-with-spring-data-apache-hadoop/
 
 * README ausbauen:
-  * wofür sind die einzelnen Programme gut?
-  * wie/wo werden sie in dieser Konstellation eingesetzt?
+  * Beschreibung der Verwendungszwecke der einzelnen Programme
+  * wie/wo werden sie in dieser Konstellation eingesetzt? (+Bild)
 
-* hadoop
-  * batch process (map/reduce)
-* storm (HERON?)
+* storm (stream processing)
   * read from kafka
   * process
   * write to cassandra  https://endocode.com/blog/2015/04/08/building-a-stream-processing-pipeline-with-kafka-storm-and-cassandra-part-1-introducing-the-components/
@@ -339,47 +352,22 @@ Inside the *application.yml* IP and port of Kafka's brokers are set (see above):
   https://storm.apache.org/releases/current/Setting-up-development-environment.html
   https://storm.apache.org/releases/current/Creating-a-new-Storm-project.html
 
-## VM ##
-* multinode (3)
-  ✔ 1x hadoop master
-  ✔ 1x zookeeper + kafka
-  ✔ cassandra seed
-  ❌ spark (batch)
-  ❌ storm (stream)
+* Daten auslesen
+  * command line tool (Java App) für manuelle Abfrage mit URL und Uhrzeit als Parameter
+  * Ausgabe beide Seiten getrennt (führen atm die selbe Verarbeitung durch)
 
-### Fragen ###
-* Technologie-Lookup (stream processing):
-  * apache beam for google data flow
-  * flink
-
-## Beispielprojekt ##
-* Maven Projekt Spring Cloud Data Flow
-  * Szenario Web Analytics (Clickstream Analyse mit Pageviews pro Zeitintervall)
-  * Programmierung außerhalb
-  * Job starten mit lokalen Daten und auf "virtueller remote hadoop" ausführen (java Dateien auf remote hadoop ausführen, ohne die Dateien direkt auf das Dateisystem der virtuellen Maschine ablegen zu müssen?)
-
-# SOURCES #
-## actual work with hadoop ##
-  https://www.petrikainulainen.net/programming/apache-hadoop/creating-hadoop-mapreduce-job-with-spring-data-apache-hadoop/
-
-
-### FINISH UP ###
-* remove comments from README
+## Letzte Schritte ##
+* Kommentare und TODOs aus README
 * remove "local test" sections from init.pp's and activate "real downloads"
 * remove tar.gz files etc. from puppet directories
+* TEST TEST TEST :)
 
+* Präsentation mit ein paar Slides vorbereiten (Darstellung Nodes und Ablauf etc.)
+* README.md als .PDF mit Slides zusammenzippen und ins Intranet hochladen
 
-
-# Anmerkungen zu verworfenem #
-evtl. für die Doku noch relevant ... (?)
-* Pig und Hive veraltet
-* Spring Cloud Data FLow Plattform scheinbar zu abstrakt (web interface und custom CommandLineInterface mit spezifischen Funktionen)
-  * https://www.youtube.com/watch?v=L6p1pzGgadA
-  * EXAMPLE: https://github.com/spring-cloud/spring-cloud-dataflow-samples/tree/master/analytics/twitter-analytics
-  * http://cloud.spring.io/spring-cloud-dataflow/
-    * http://localhost:9393/dashboard
-* spark
-  * schneller als hadoop map/reduce (aber eigentlich nicht benötigt) > deshalb erst mal hadoop
-  * http://www.michael-noll.com/blog/2014/10/01/kafka-spark-streaming-integration-example-tutorial/
-
--->
+> 14:00 Donnerstag E206 (20-30 min)
+  > "praktische" Präsentation
+  > Demo wie zu benutzen ist, wie eingerichtet wird/wurde, Konsolen: was läuft wo wie durch?
+  > Systemübersicht
+    * Wo sind welche Dateien und Anwendugnen
+    * Wie können laufende Prozesse "beobachtet" werden
