@@ -8,5 +8,6 @@ public class PageviewsGeneratorApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(PageviewsGeneratorApplication.class, args);
+		new Generator().Quicktest();
 	}
 }
