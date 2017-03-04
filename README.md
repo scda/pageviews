@@ -276,40 +276,23 @@ https://spark.apache.org/streaming/
 ## **Spring Apps** ##
 
 ### Generator ###
-The project template for this application can be created via the Spring Initializr Tool on [start.spring.io](https://start.spring.io). The Spring Cloud Stream Binder for Kafka is needed.
+The generator uses the Kafka [Producer API](https://kafka.apache.org/090/documentation.html#producerapi) for version 0.9.0 and pulls it via maven. The generator produces messages containing
+  * timestamp
+  * visited URL
+  * visitor IP
+  * visitor UID
 
-The Generator is a Spring Boot / Spring Cloud application that creates a set of random strings to simulate pageviews on a webserver with
-* timestamp
-* visitor IP
-* visitor UID
-* visited URL
-The created data are then being sent to a Kafka Topic named *Output* with the help of [Spring Cloud Stream](http://cloud.spring.io/spring-cloud-stream/). The reference can be found here: [Spring Cloud Stream reference](http://docs.spring.io/spring-cloud-stream/docs/1.0.2.RELEASE/reference/htmlsingle/index.html)
+The configuration of the application happens right inside the code file: Most importantly the address of the Kafka node and the port of its message broker need to be specified.
 
-The main application class is annotated with
+The data is sent via a *KafkaProducer*. The Producer sends a *ProducerRecord* containing a key, value pair - both consisting of strings - to the *output* topic on Kafka for as long as it is not interrupted.
 ```java
-  @SpringBootApplication
+  producer.send(new ProducerRecord<String, String>("output", "pageviews", NewMessage()));
 ```
 
-The generator class is annotated to get connectivity to a message broker (Kafka in this case) as a producer:
-```java
-  @EnableBinding(Source.class)
-```
-
-The generating function is annotated to write to Kafka's *Output* topic repeatedly in a fixed time interval:
-```java
-  @InboundChannelAdapter(value = Source.OUTPUT, poller = @Poller(fixedDelay = "5000", maxMessagesPerPoll = "1"))
-```
-
-Inside the *application.yml* IP and port of Kafka's brokers are set (see above):
-```yml
-  spring:
-    cloud:
-      stream:
-        kafka:
-          binder:
-            brokers: 10.10.33.22
-            defaultBrokerPort: 9092
-            zkNodes: 10.10.33.22
+The generator can be started via Maven :
+```bash
+  $ mvn package
+  $ mvn exec:java
 ```
 
 ### Stream Processing ###
@@ -320,9 +303,12 @@ Inside the *application.yml* IP and port of Kafka's brokers are set (see above):
 
 # TODO #
 ## up next ##
+* generator
+  * usage instructions
+
 * kafka node
   * start before hadoop node
-  * make work it ... ???
+  * make it work ... ???
 
 * hadoop node:
   * Fehlersuche cronjob hadoop-daemon
