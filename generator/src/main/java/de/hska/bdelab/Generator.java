@@ -36,7 +36,7 @@ public class Generator
     	LOGGER.info("generator startup.");
 
         Properties props = new Properties();
-        props.put("bootstrap.servers", "localhost:9092");
+        props.put("bootstrap.servers", "10.10.33.22:9092");
         props.put("acks", "all");
         props.put("retries", 0);
         props.put("batch.size", 16384);
