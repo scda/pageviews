@@ -78,20 +78,34 @@ class kafka {
 		require => Exec["unpack_kafka"]
 	}
 
-
-	cron { "cron-zookeeper" :
-		command => "${home_dir}/kafka_${scala_version_major}-${kafka_version}/bin/zookeeper-server-start.sh ${home_dir}/kafka_${scala_version_major}-${kafka_version}/config/zookeeper.properties",
-		user => "root",
-		special => "reboot",
-		ensure => present,
-		require => Exec["unpack_kafka"]
+	file {
+		"/root/startupscript.sh":
+		source => "puppet:///modules/kafka/startupscript.sh",
+		mode => 744,
+		owner => root,
+		group => root
 	}
-	cron { "cron-kafka" :
-		command => "${home_dir}/kafka_${scala_version_major}-${kafka_version}/bin/kafka-server-start.sh ${home_dir}/kafka_${scala_version_major}-${kafka_version}/config/server.properties",
+
+	exec { "startupscript_zookeeper" :
+    command => "echo '${home_dir}/kafka_${scala_version_major}-${kafka_version}/bin/zookeeper-server-start.sh ${home_dir}/kafka_${scala_version_major}-${kafka_version}/config/zookeeper.properties &' >> /root/startupscript.sh",
+    user => "root",
+    path => $path,
+    require => File["/root/startupscript.sh"],
+    before => Exec["startupscript_kafka"]
+  }
+	exec { "startupscript_kafka" :
+    command => "echo '${home_dir}/kafka_${scala_version_major}-${kafka_version}/bin/kafka-server-start.sh ${home_dir}/kafka_${scala_version_major}-${kafka_version}/config/server.properties &' >> /root/startupscript.sh",
+    user => "root",
+    path => $path,
+    require => [ File["/root/startupscript.sh"], Exec["unpack_kafka"] ]
+  }
+
+	cron { "cron-startupscript-kfk" :
+		command => "/root/startupscript.sh",
 		user => "root",
 		special => "reboot",
 		ensure => present,
-		require => Exec["unpack_kafka"]
+		require => [ Exec["unpack_kafka"], Exec["startupscript_kafka"] ]
 	}
 
 }

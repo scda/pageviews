@@ -58,12 +58,21 @@ class flume {
 		timeout => 30
 	}
 
+	exec { "startup_flume" :
+    command => "echo '${home_dir}/apache-flume-${flume_version}-bin/bin/flume-ng agent --conf ${home_dir}/apache-flume-${flume_version}-bin/conf -conf-file ${home_dir}/apache-flume-${flume_version}-bin/conf/flume-kafka-source-hdfs-sink.conf --name agent1 &' >> /root/startupscript.sh",
+    user => "root",
+    path => $path,
+    require => File["/root/startupscript.sh"]
+  }
+
+	/*
 	cron { "cron-flume" :
     command => "${home_dir}/apache-flume-${flume_version}-bin/bin/flume-ng agent --conf ${home_dir}/apache-flume-${flume_version}-bin/conf -conf-file ${home_dir}/apache-flume-${flume_version}-bin/conf/flume-kafka-source-hdfs-sink.conf --name agent1 &",
     user => "root",
     special => "reboot",
     ensure => present,
-    require => Exec["unpack_flume"] 
+    require => Exec["unpack_flume"]
 	}
+	*/
 
 }

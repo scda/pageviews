@@ -3,18 +3,14 @@ package de.hska.bdelab;
 import java.util.Date;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import org.springframework.cloud.stream.annotation.EnableBinding;
 import org.springframework.cloud.stream.messaging.Source;
 import org.springframework.integration.annotation.InboundChannelAdapter;
 import org.springframework.integration.annotation.Poller;
 
-//@EnableBinding(Source.class)
+@EnableBinding(Source.class)
 public class Generator {
-	
-	private static final Logger LOGGER = Logger.getLogger(Generator.class.getName());
 	
 	final String[] urls = {
 			"index",
@@ -39,13 +35,7 @@ public class Generator {
 
 	}
 	
-	public void Quicktest() {
-		for (;;) {
-			LOGGER.log(Level.FINE, (GenerateTimestamp() + "," + GenerateIp() + "," + GenerateUri() + "," + GenerateUid()));
-		}
-	}
-	
-	@InboundChannelAdapter(value = Source.OUTPUT, poller = @Poller(fixedDelay = "1000", maxMessagesPerPoll = "1"))
+	@InboundChannelAdapter(value = Source.OUTPUT, poller = @Poller(fixedDelay = "5000", maxMessagesPerPoll = "1"))
 	public String pageviewMessageSource()  {		
 		return (GenerateTimestamp() + "," + GenerateIp() + "," + GenerateUri() + "," + GenerateUid());
 	}

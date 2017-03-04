@@ -4,6 +4,6 @@ spring:
     stream:
       kafka:
         binder:
-          brokers: 10.10.33.22
+          brokers: localhost
           defaultBrokerPort: 9092
-          zkNodes: 10.10.33.22
+          zkNodes: localhost

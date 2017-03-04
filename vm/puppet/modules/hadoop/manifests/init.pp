@@ -82,7 +82,7 @@ class hadoop {
     path => $path,
     timeout => 30,
     require => Exec["unpack_hadoop"],
-    before => Exec["start_daemons"]
+    before => Exec["start_hdpdaemons"]
   }
 
   exec { "start_hdpdaemons" :
@@ -103,12 +103,28 @@ class hadoop {
     require => Exec["dfs_directories_1"]
   }
 
-  cron { "cron-dfs-daemons" :
-    command => "${hadoop_home}-${hadoop_version}/sbin/start-dfs.sh",
+  file {
+    "/root/startupscript.sh":
+    source => "puppet:///modules/hadoop/startupscript.sh",
+    mode => 744,
+    owner => root,
+    group => root
+  }
+
+  exec { "startup_hdpdaemons" :
+    command => "echo '${hadoop_home}-${hadoop_version}/sbin/start-dfs.sh' >> /root/startupscript.sh",
+    user => "root",
+    path => $path,
+    require => File["/root/startupscript.sh"],
+    before => Exec["startup_flume"]
+  }
+
+  cron { "cron-startupscript-hdp" :
+    command => "/root/startupscript.sh",
     user => "root",
     special => "reboot",
     ensure => present,
-    require => Exec["unpack_hadoop"]
+    require => [ Exec["unpack_hadoop"], Exec["startup_hdpdaemons"] ]
 	}
 
   exec {"set_hadoop_home" :

@@ -215,7 +215,7 @@ end flume (forcefully):
   kill -9 pid
 
 CHECK HADOOP:
-  bin/hadoop fs -ls  hdfs://10.10.33.11:9000/
+  /opt/hadoop-2.7.3/bin/hadoop fs -ls  hdfs://10.10.33.11:9000/
   > neue directories werden automatisch angelegt, müssen nicht vor-formatiert werden.
 
 
@@ -246,7 +246,7 @@ local test:
 > bin/kafka-topics.sh --list --zookeeper localhost:2181
 
 > bin/kafka-console-producer.sh --broker-list localhost:9092 --topic output
-> bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic output --from-beginning
+> bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --zookeeper localhost:2181 --topic output --from-beginning
 -->
 
 
@@ -320,17 +320,17 @@ Inside the *application.yml* IP and port of Kafka's brokers are set (see above):
 
 # TODO #
 ## up next ##
-* generator:
-  * URL aus Liste auswählen
-  * random timer statt fester Zugriff
-  * TEST mit vorgegebener Liste von Zugriffen > damit Ergebnisse validiert werden können
+* kafka node
+  * start before hadoop node
+  * make work it ... ???
+
+* hadoop node:
+  * Fehlersuche cronjob hadoop-daemon
+  * Prüfen: cronjob flume-ng
+  * sinnvolle "Aufteilung" für die Speicherung der Daten auf hdfs + Speicher(roll)-Intervalle setzen
 
 
 ## after that ... #
-* hadoop node:
-  * Fehlersuche cronjob hadoop-daemon
-  * Prüfen: cronjob flume-ng + environment var permanent? (reload ohne provisioning)
-  * sinnvolle "Aufteilung" für die Speicherung der Daten auf hdfs + Speicher(roll)-Intervalle setzen
 
 * map/reduce job
   * URL Aufrufe pro Stunde
@@ -355,6 +355,9 @@ Inside the *application.yml* IP and port of Kafka's brokers are set (see above):
 * Daten auslesen
   * command line tool (Java App) für manuelle Abfrage mit URL und Uhrzeit als Parameter
   * Ausgabe beide Seiten getrennt (führen atm die selbe Verarbeitung durch)
+
+* generator:
+  * TEST mit vorgegebener Liste von Zugriffen > damit Ergebnisse validiert werden können
 
 ## Letzte Schritte ##
 * Kommentare und TODOs aus README
