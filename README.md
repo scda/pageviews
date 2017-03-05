@@ -333,13 +333,23 @@ cleanup to go again:
 
 
 
+konkret:
+  nano PageViews.java
+  bin/hadoop com.sun.tools.javac.Main PageViews.java
+  jar cf pv.jar PageViews*.class
+  bin/hdfs dfs -rm -r /output
+  bin/hadoop jar pv.jar PageViews /input /output
+  bin/hadoop fs -cat /output/part-r-00000
 
-nano PageViews.java
-bin/hadoop com.sun.tools.javac.Main PageViews.java
-jar cf pv.jar PageViews*.class
-bin/hdfs dfs -rm -r /output
-bin/hadoop jar pv.jar PageViews /input /output
-bin/hadoop fs -cat /output/part-r-00000
+
+automatisch startender batch-job:
+  - processed alle 5 minuten die aufrufe der aktuellen Stunde
+  - überschreibt die alten Aufrufe
+
+
+
+
+
 -->
 
 
@@ -353,16 +363,15 @@ bin/hadoop fs -cat /output/part-r-00000
 * map/reduce job
   * Schritte automatisieren
     * Einrichtung
-      * environment.sh kopieren und einmal bei einrichtung starten
       * pageviews.java kopieren
       * javac & jar
     * cron: automatisch starten alle xy Zeitintervall
-  * Input from flume > passt die Anordnung?
   * output
     * URL Aufrufe pro Stunde (key=time, value=url oder umgekehrt ?)
     * in Cassandra schreiben
       * erster key? (partition = url)
       * range abfragen möglich machen? (damit zeitspannen ausgegeben werden können)
+      * output überschreiben > job läuft alle 5 minuten, fasst aber die gesamte vergangene Stunde zusammen
   * general
 
 
@@ -406,6 +415,7 @@ bin/hadoop fs -cat /output/part-r-00000
 * ABGABE
   * README.md als .PDF mit Slides zusammenzippen und ins Intranet hochladen
   * Präsentation mit ein paar Slides vorbereiten (Darstellung Nodes und Ablauf etc.)
+  * github neu aufsetzen > ohne history übergeben
 
 > 14:00 Donnerstag E206 (20-30 min)
   > "praktische" Präsentation
@@ -413,3 +423,4 @@ bin/hadoop fs -cat /output/part-r-00000
   > Systemübersicht
     * Wo sind welche Dateien und Anwendungen
     * Wie können laufende Prozesse "beobachtet" werden
+ 
