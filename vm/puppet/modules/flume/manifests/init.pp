@@ -58,7 +58,7 @@ class flume {
 		timeout => 30
 	}
 
-	exec { "startup_flume" :
+	exec { "startupscript_flume" :
     command => "echo '${home_dir}/apache-flume-${flume_version}-bin/bin/flume-ng agent --conf ${home_dir}/apache-flume-${flume_version}-bin/conf -conf-file ${home_dir}/apache-flume-${flume_version}-bin/conf/flume-kafka-source-hdfs-sink.conf --name agent1 &' >> /root/startupscript.sh",
     user => "root",
     path => $path,
