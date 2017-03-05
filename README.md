@@ -295,40 +295,81 @@ The generator can be started via Maven :
   $ mvn exec:java
 ```
 
+### Batch Processing ###
+
+
+
+<!--
+  * https://hadoop.apache.org/docs/r2.7.3/hadoop-mapreduce-client/hadoop-mapreduce-client-core/MapReduceTutorial.html
+
+  * HAVE JDK installed (not only headless JRE) !!!
+
+set via puppet (automated):
+  $ export JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64
+  $ export PATH=${JAVA_HOME}/bin:${PATH}
+  $ export HADOOP_CLASSPATH=${JAVA_HOME}/lib/tools.jar
+
+compile and create jar:
+  $ bin/hadoop com.sun.tools.javac.Main WordCount.java
+  $ jar cf wc.jar WordCount*.class
+
+move files to hdfs:
+  $ bin/hdfs dfs -mkdir /input
+  $ bin/hdfs dfs -copyFromLocal /opt/hadoop-2.7.3/input01 /input
+  $ bin/hdfs dfs -copyFromLocal /opt/hadoop-2.7.3/input02 /input
+
+output file contents from hdfs:
+  $ bin/hadoop fs -cat /input/input01
+
+start job on hadoop via prepared jar:
+  $ bin/hadoop jar wc.jar WordCount /input /output
+
+output the results:
+  $ bin/hadoop fs -cat /output/part-r-00000
+
+cleanup to go again:
+  $ bin/hdfs dfs -rm -r /output
+
+
+
+
+
+nano PageViews.java
+bin/hadoop com.sun.tools.javac.Main PageViews.java
+jar cf pv.jar PageViews*.class
+bin/hdfs dfs -rm -r /output
+bin/hadoop jar pv.jar PageViews /input /output
+bin/hadoop fs -cat /output/part-r-00000
+-->
+
+
 ### Stream Processing ###
 
-### Batch Processing ###
 
 
 
 # TODO #
 ## up next ##
-* generator
-  * usage instructions
+* map/reduce job
+  * Schritte automatisieren
+    * Einrichtung
+      * environment.sh kopieren und einmal bei einrichtung starten
+      * pageviews.java kopieren
+      * javac & jar
+    * cron: automatisch starten alle xy Zeitintervall
+  * Input from flume > passt die Anordnung?
+  * output
+    * URL Aufrufe pro Stunde (key=time, value=url oder umgekehrt ?)
+    * in Cassandra schreiben
+      * erster key? (partition = url)
+      * range abfragen möglich machen? (damit zeitspannen ausgegeben werden können)
+  * general
 
-* kafka node
-  * start before hadoop node
-  * make it work ... ???
-
-* hadoop node:
-  * Fehlersuche cronjob hadoop-daemon
-  * Prüfen: cronjob flume-ng
-  * sinnvolle "Aufteilung" für die Speicherung der Daten auf hdfs + Speicher(roll)-Intervalle setzen
 
 
 ## after that ... #
-
-* map/reduce job
-  * URL Aufrufe pro Stunde
-  * cron: automatisch starten alle xy Zeitintervall
-  * in Cassandra schreiben
-    * erster key? (partition = url)
-    * range abfragen möglich machen? (damit zeitspannen ausgegeben werden können)
-  * https://www.petrikainulainen.net/programming/apache-hadoop/creating-hadoop-mapreduce-job-with-spring-data-apache-hadoop/
-
-* README ausbauen:
-  * Beschreibung der Verwendungszwecke der einzelnen Programme
-  * wie/wo werden sie in dieser Konstellation eingesetzt? (+Bild)
+* hadoop
+  * make flume (re)connect to kafka (even if it didn't work during startup ...)
 
 * storm (stream processing)
   * read from kafka
@@ -342,21 +383,33 @@ The generator can be started via Maven :
   * command line tool (Java App) für manuelle Abfrage mit URL und Uhrzeit als Parameter
   * Ausgabe beide Seiten getrennt (führen atm die selbe Verarbeitung durch)
 
-* generator:
-  * TEST mit vorgegebener Liste von Zugriffen > damit Ergebnisse validiert werden können
+* README ausbauen:
+  * Beschreibung der Verwendungszwecke der einzelnen Programme
+  * wie/wo werden sie in dieser Konstellation eingesetzt? (+Bild)
 
-## Letzte Schritte ##
-* Kommentare und TODOs aus README
-* remove "local test" sections from init.pp's and activate "real downloads"
-* remove tar.gz files etc. from puppet directories
+* generator:
+  * TEST mit vorgegebener Liste von Zugriffen zur Validierung (bestehende Liste erweitern!)
+
+## Letzte Schritte #
+* README
+  * TODOs bearbeiten und raus
+  * Kommentare raus
+
+* CLEANUP
+  * remove tar.gz files etc. from puppet directories
+
+* MANIFESTS
+  * remove "local test" sections from init.pp's and activate "real downloads"
+
 * TEST TEST TEST :)
 
-* Präsentation mit ein paar Slides vorbereiten (Darstellung Nodes und Ablauf etc.)
-* README.md als .PDF mit Slides zusammenzippen und ins Intranet hochladen
+* ABGABE
+  * README.md als .PDF mit Slides zusammenzippen und ins Intranet hochladen
+  * Präsentation mit ein paar Slides vorbereiten (Darstellung Nodes und Ablauf etc.)
 
 > 14:00 Donnerstag E206 (20-30 min)
   > "praktische" Präsentation
   > Demo wie zu benutzen ist, wie eingerichtet wird/wurde, Konsolen: was läuft wo wie durch?
   > Systemübersicht
-    * Wo sind welche Dateien und Anwendugnen
+    * Wo sind welche Dateien und Anwendungen
     * Wie können laufende Prozesse "beobachtet" werden
