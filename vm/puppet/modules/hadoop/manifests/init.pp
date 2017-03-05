@@ -2,7 +2,7 @@ class hadoop {
   $hadoop_home = "/opt/hadoop"
   $hadoop_version = "2.7.3"
 
-  package { "openjdk-7-jre-headless" :
+  package { "openjdk-7-jdk" :
 	  ensure => present,
 	  require => Exec["apt-get update"]
 	}
@@ -127,9 +127,43 @@ class hadoop {
     require => [ Exec["unpack_hadoop"], Exec["startup_hdpdaemons"] ]
 	}
 
-  exec {"set_hadoop_home" :
+  /*exec { "set_hadoop_home" :
     command => "echo 'HADOOP_HOME=${hadoop_home}-${hadoop_version}' >> /etc/environment",
     path => $path,
     user => "root"
+  }
+
+  exec { "set_path" :
+    command => "sed echo 'JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64' >> /etc/environment",
+    path => $path,
+    user => "root"
+  }
+
+  exec { "set_java_home" :
+    command => "echo 'JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64' >> /etc/environment",
+    path => $path,
+    user => "root"
+  }
+
+  exec { "set_hadoop_classpath" :
+    command => "echo 'HADOOP_CLASSPATH=${JAVA_HOME}/lib/tools.jar' >> /etc/environment",
+    path => $path,
+    user => "root"
+  }*/
+
+  file {
+    "/etc/profile.d/10-hdp-environment.sh":
+    source => "puppet:///modules/hadoop/10-hdp-environment.sh",
+    mode => 744,
+    owner => root,
+    group => root,
+    require => Exec["unpack_hadoop"]
+  }
+
+  exec { "set_env" :
+    command => "echo 'HADOOP_CLASSPATH=${JAVA_HOME}/lib/tools.jar' >> /etc/environment",
+    path => $path,
+    user => "root",
+    require => File["/etc/profile.d/10-hdp-environment.sh"]
   }
 }
