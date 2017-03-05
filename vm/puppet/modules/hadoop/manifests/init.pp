@@ -77,6 +77,15 @@ class hadoop {
     before => Exec["hdfs_format"]
   }
 
+  file {
+    "/etc/environment":
+    source => "puppet:///modules/hadoop/environment",
+    mode => 644,
+    owner => root,
+    group => root,
+    before => Exec["hdfs_format"]
+  }
+
   exec { "hdfs_format" :
     command => "${hadoop_home}-${hadoop_version}/bin/hdfs namenode -format",
     path => $path,
@@ -88,10 +97,11 @@ class hadoop {
   exec { "start_hdpdaemons" :
     command => "${hadoop_home}-${hadoop_version}/sbin/start-dfs.sh",
     path => $path,
-    require => Exec["unpack_hadoop"]
+    require => Exec["unpack_hadoop"],
+    before => Exec["startupscript_flume"]
   }
 
-  exec { "dfs_directories_1" :
+  /*exec { "dfs_directories_1" :
     command => "${hadoop_home}-${hadoop_version}/bin/hdfs dfs -mkdir /user",
     path => $path,
     require => Exec["start_hdpdaemons"],
@@ -101,7 +111,7 @@ class hadoop {
     command => "${hadoop_home}-${hadoop_version}/bin/hdfs dfs -mkdir /user/root",
     path => $path,
     require => Exec["dfs_directories_1"]
-  }
+  }*/
 
   file {
     "/root/startupscript.sh":
@@ -111,12 +121,12 @@ class hadoop {
     group => root
   }
 
-  exec { "startup_hdpdaemons" :
+  exec { "startupscript_hdpdaemons" :
     command => "echo '${hadoop_home}-${hadoop_version}/sbin/start-dfs.sh' >> /root/startupscript.sh",
     user => "root",
     path => $path,
     require => File["/root/startupscript.sh"],
-    before => Exec["startup_flume"]
+    before => Exec["startupscript_flume"]
   }
 
   cron { "cron-startupscript-hdp" :
@@ -124,46 +134,53 @@ class hadoop {
     user => "root",
     special => "reboot",
     ensure => present,
-    require => [ Exec["unpack_hadoop"], Exec["startup_hdpdaemons"] ]
+    require => [ Exec["unpack_hadoop"], Exec["startupscript_hdpdaemons"] ]
 	}
 
-  /*exec { "set_hadoop_home" :
-    command => "echo 'HADOOP_HOME=${hadoop_home}-${hadoop_version}' >> /etc/environment",
-    path => $path,
-    user => "root"
+  file {
+    "${hadoop_home}-${hadoop_version}/PageViews.java":
+    source => "puppet:///modules/hadoop/PageViews.java",
+    mode => 744,
+    owner => root,
+    group => root,
+    ensure => present,
+    require => Exec["unpack_hadoop"],
+    before => Exec["compile_job"]
   }
 
-  exec { "set_path" :
-    command => "sed echo 'JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64' >> /etc/environment",
+  exec { "compile_job" :
+    cwd => "${hadoop_home}-${hadoop_version}",
+    command => "${hadoop_home}-${hadoop_version}/bin/hadoop com.sun.tools.javac.Main PageViews.java",
+    environment => [ "JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64",  "HADOOP_CLASSPATH=/usr/lib/jvm/java-7-openjdk-amd64/lib/tools.jar",
+    "HADOOP_HOME=/opt/hadoop-2.7.3" ],
     path => $path,
-    user => "root"
+    user => "root",
+    require => [ File["${hadoop_home}-${hadoop_version}/PageViews.java"], File["${hadoop_home}-${hadoop_version}/etc/hadoop/hadoop-env.sh"], Exec["start_hdpdaemons"] ]
   }
 
-  exec { "set_java_home" :
-    command => "echo 'JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64' >> /etc/environment",
+  exec { "pack_job" :
+    cwd => "${hadoop_home}-${hadoop_version}",
+    command => "jar cf pv.jar PageViews*.class",
     path => $path,
-    user => "root"
+    user => "root",
+    require => Exec["compile_job"]
   }
-
-  exec { "set_hadoop_classpath" :
-    command => "echo 'HADOOP_CLASSPATH=${JAVA_HOME}/lib/tools.jar' >> /etc/environment",
-    path => $path,
-    user => "root"
-  }*/
 
   file {
-    "/etc/profile.d/10-hdp-environment.sh":
-    source => "puppet:///modules/hadoop/10-hdp-environment.sh",
+    "${hadoop_home}-${hadoop_version}/run-batch.sh":
+    source => "puppet:///modules/hadoop/run-batch.sh",
+    ensure => present,
     mode => 744,
     owner => root,
     group => root,
     require => Exec["unpack_hadoop"]
   }
 
-  exec { "set_env" :
-    command => "echo 'HADOOP_CLASSPATH=${JAVA_HOME}/lib/tools.jar' >> /etc/environment",
-    path => $path,
+  cron { "cron-hdp-batch" :
+    command => "${hadoop_home}-${hadoop_version}/run-batch.sh",
     user => "root",
-    require => File["/etc/profile.d/10-hdp-environment.sh"]
-  }
+    minute => "*/5",
+    ensure => present,
+    require => File["${hadoop_home}-${hadoop_version}/run-batch.sh"]
+	}
 }
