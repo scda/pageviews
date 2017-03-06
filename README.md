@@ -7,37 +7,82 @@ This project contains a small cluster of virtual machines and small jobs to be e
 * Spring projects (Spring Cloud, Stream, ...)
 
 
-# **PREPARATIONS** #
+# **QUICKSTART** #
+## Preparations ##
 All of the used software is currently (early 2017) available for MacOS, Windows and GNU/Linux and largely open source, meaning you should be able to download the sources and build them for your platform if there are no binaries available already. I recommend getting the latest official version at the projects' homepages. Versions installed via a system's package manager can obviously deviate. The software versions used during the creation of this project are indicated within the respective sections.
 
-## Software Installation ##
-**Virtualbox**
-[virtualbox.org](https://www.virtualbox.org)
+**Virtualbox**  
+[virtualbox.org](https://www.virtualbox.org)  
 Version used during development: 5.1.14
 
-**Vagrant**
-[vagrantup.com](https://www.vagrantup.com)
+**Vagrant**  
+[vagrantup.com](https://www.vagrantup.com)  
 Version used during development: 1.9.1
 
-**Puppet**
-[puppet.com](https://puppet.com/)
+**Puppet**  
+[puppet.com](https://puppet.com/)  
 Version used during development: 4.8.2
 
-**Maven**
-[maven.apache.org](https://maven.apache.org/)
+**Maven**  
+[maven.apache.org](https://maven.apache.org/)  
 Version used during development: 3.3.9
 
+## Go! ##
+### VMs ###
+Change into the *vm* directory containing the *Vagrantfile* and start all the virtual machines 
+```bash
+  $ vagrant up
+```
+There 
 
+### Generator ###
+Change into the *generator* directory and run it 
+```bash
+  $ mvn package
+  $ mvn exec:java
+```
 
-## VM ##
-### Setup ###
+### Reader ###
+<!-- TODO -->
+
+# VIRTUAL ENVIRONMENT #
+During this project's course the decision was met to use Vagrant combined with Puppet and therefore base the setup of the virtual environment on a *description* rather than creating a big pre-filled binary file for the VM - keeping in mind that the project aims towards being able to be distributed as easy as possible to the students.
+
+Vagrant creates the virtual machines and performs the basic initial configurations while Puppet takes care of any further machine configuration in detail including the installation of all used software components.
+
+The following setup will be achieved by executing the vagrant and puppet scripts:
+<!-- TODO: create, upload and link image -->
+![pageviews machine setup ](https://github.com/adam-p/markdown-here/raw/master/src/common/images/icon48.png "machine setup")
+
+## Vagrant ##
+The initial steps of the setup are being described within the *Vagrantfile* in the root directory:
+
+All virtual machines will run a so called *box* which is the base image that will be pulled automatically from a central repository (if not present already):
+```ruby
+config.vm.box = "ubuntu/trusty64"
+```
+
+The amount of memory available to a single vm is specified via a virtualbox specific variable:
+```ruby
+config.vm.provider "virtualbox" do |vb|
+    vb.memory = "2048"
+end
+```
+
+All further setup, the so called provisioning of the machines will be left to puppet (see chapter below).
+
+### Detailed Instructions ###
+In addition to the instructions from the *Quickstart* above, I want to give a little more extensive set of instructions for the Setup and Usage of Vagrant.
+
+#### Setup ####
 * If you enabled the shared directory between a guest and the host system, create the respective sub directory
 * If you are behind a proxy, follow the instructions in the section *Proxy* first
-* Start the virtual machine (via terminal from within the root directory which contains the *Vagrantfile*) :
+
+Start the virtual machine (via terminal from within the root directory which contains the *Vagrantfile*) :
 ```bash
 vagrant up
 ```
-The first start will take a few minutes, all necessary files such as the OS images and all other programs running inside the virtual machines have to be downloaded and the machines need to be set up.
+The first start will take a few minutes since all necessary files such as the OS images and all other programs running inside the virtual machines have to be downloaded and the machines need to be set up.
 
 #### Proxy ####
 Set an environment variable first:
@@ -50,17 +95,15 @@ The virtual machine will need the vagrant plugin *proxyconf* to connect through 
 vagrant plugin install vagrant-proxyconf
 ```
 
-The *Vagrantfile* has to be edited accordingly (simply uncomment and edit the given lines according to your needs):
+The *Vagrantfile* then has to be edited accordingly (simply uncomment and edit the already given lines according to your needs):
 ```ruby
 config.proxy.http     = "http://USER:PASSWORD@PROXY_URL:PORT/"
 config.proxy.https    = "http://USER:PASSWORD@PROXY_URL:PORT/"
 config.proxy.no_proxy = "localhost,127.0.0.1"
 ```
 
-
-# USAGE #
-## VM Controls ##
-The *Vagrantfile* sets up multiple virtual machines. Some of the commands to control them need the name of a specific machine to work (like *vagrant ssh*) and some can be called without any specified name and are then executed for all machines inside the *Vagrantfile* (like *vagrant up*). The machines need to be re-started every time the host had powered off. The following list is only a selection of frequently needed commands.
+#### Usage ####
+The *Vagrantfile* contains multiple virtual machines to be set up. Some of the commands to control them need the name of a specific machine to work (like *vagrant ssh*) and some can be called without any specified name and are then executed for all machines inside the *Vagrantfile* (like *vagrant up*). The machines need to be re-started every time the host had powered off. The following list is only a selection of frequently needed commands.
 
 Start the VMs:
 ```bash
@@ -92,34 +135,12 @@ Delete the VMs (including all used files except the box's base-image):
 vagrant destroy [NAME optional]
 ```
 
-# **DEVELOPMENT** #
-## **Virtual Environment** ##
-During this project's course the decision was met to use Vagrant combined with Puppet and therefore base the setup of the virtual environment on a *description* rather than creating a big pre-filled binary file for the VM - keeping in mind that the project aims towards being able to be distributed as easy as possible to the students.
-
-Vagrant creates the virtual machines and performs the basic initial configurations while Puppet takes care of any further machine configuration in detail including the installation of all used software components.
-
-The following setup will be achieved by executing the vagrant and puppet scripts:
-<!-- TODO: create, upload and link image -->
-![pageviews machine setup ](https://github.com/adam-p/markdown-here/raw/master/src/common/images/icon48.png "machine setup")
-
-### **Vagrant** ###
-The initial steps of the setup are being described within the *Vagrantfile* in the root directory:
-
-All virtual machines will run a so called *box* which is the base image that will be pulled automatically from a central repository (if not present already):
-```ruby
-config.vm.box = "ubuntu/trusty64"
+See more commands and get infos about them (as usual):
+```bash
+vagrant [COMMAND optional] -h
 ```
 
-The amount of memory available to a single vm is specified via a virtualbox specific variable:
-```ruby
-config.vm.provider "virtualbox" do |vb|
-    vb.memory = "2048"
-end
-```
-
-All further setup, the so called provisioning of the machines will be left to puppet.
-
-### **Puppet** ###
+## **Puppet** ##
 In this setup every machine has its own separate manifest-file and accesses different modules (some of which are shared, some only used by one machine). The separate machines are created and their puppet configuration is set individually:
 ```ruby
 config.vm.define "machine01" do |mach01|
@@ -158,41 +179,87 @@ Inside the specified module_path subdirectories for those separate modules are c
 
 Puppet offers many different options that help the user to achieve the desired state of the targeted machine. The Documentation for all Puppet Resource Types can be found here: [Puppet Reference](https://docs.puppet.com/puppet/4.8/type.html)
 
-#### Hadoop ####
-The Apache Hadoop software library focuses on reliable, scalable, distributed computing and the processing of large data sets.
 
-One component of Hadoop is HDFS, the Hadoop File System, which is a special distributed filesystem that will allow for big amounts of data to be written on an abstract file space. This filesystem stores the data that was read from the input stream before batch processing the received data with map/reduce jobs.
 
-In this scope a single machine "cluster" is used for Hadoop to run on. The Hadoop master only needs java to be installed in order to run. The full documentation for this setup can be found here: [Hadoop Single Cluster](https://hadoop.apache.org/docs/r2.7.3/hadoop-project-dist/hadoop-common/SingleCluster.html).
+# **INPUT** #
+The input consists of two components: An instance of a Kafka message broker and a Java Application writing somewhat randomly generated data into one of the topics to simulate logs of pageviews on a webserver. Kafka then holds those messages for the other components of the overall system to come and get them.
 
-SSH is configured before setting up Hadoop so that it will not perform strict host checking or ask for the adding of unknown hosts since the Hadoop scripts are supposed to run headless without any user interaction. These settings simplify the setup for this demo's purpose, but would be unfitting for any other environment since they create a serious security concern.
+## Kafka ##
+Kafka is a distributed message broker for real-time data feeds with high throughput. In this setup it will run on a single node for the sake of simplicity. The very small amounts of data put in allow for this to work out well. Kafka depends on Apache Zookeeper, a distributed configuration and synchronization service. Zookeeper stores information about topics, brokers, consumers etc. for Kafka.
 
-During the setup of the Hadoop machine the following steps are performed:
-* Install Java
-* Download and unpack Hadoop
-* Create or replace settings files
-  * set JAVA_HOME
-  * set filesystem replication to 1 and make it accessible on port **9000**
-  * make the map/reduce job tracker accessible via port **9001**
-  * format HDFS
-  * start the Name- and DataNode daemons
-  * create the first HDFS directories
-  * create cron jobs for the Node daemons, so they start automatically every time the machine boots
+An instruction for a basic setup can be found here: [Kafka Single Node](https://kafka.apache.org/quickstart). Java and Scala need to be installed beforehand. The Scala version is important for the choice of the Kafka version.
 
-The status of the NameNode can be viewed via the web interface on [localhost:50070](http://localhost:50070).
-
-If the connection to Hadoop fails, ssh into the machine and check whether Hadoop is listening:
-```bash
-  $ netstat -anlp | grep LISTEN
+For this simple setup the server settings for Kafka need to be edited only in a minimal way. The address for the listener needs to be edited, so that it will accept connections from outside the local machine and it needs to be told the address of the zookeeper instance (which runs on the same machine as Kafka in this setup):
+*config/server.properties*
+```properties
+  listeners=PLAINTEXT://0.0.0.0:9092
+  zookeeper.connect=10.10.33.22:2181
 ```
-### Flume ###
-Apache Flume aims to be a distributed service to collect, aggregate and move large amounts of data (usually used for logs) with a focus on streaming data flows. This is the second software component that resides on the same node as Hadoop in this setup.
+
+Kafka comes with a ready-to-use Zookeeper executable which is needed to run Kafka. In this scenario one Zookeeper server instance runs along with a Kafka server instance, both in daemon mode. Zookeeper will be accessible via the forwarded port **2181** and Kafka's broker list can be accessed on port **9092**. Those server daemons will be started via a bash startupscript and a cron entry every time the machine boots.
+
+<!--
+local test:
+
+> cd /opt/kafka_***
+> bin/zookeeper-server-start.sh config/zookeeper.properties
+> bin/kafka-server-start.sh config/server.properties
+
+> bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 1 --topic output
+> bin/kafka-topics.sh --list --zookeeper localhost:2181
+
+> bin/kafka-console-producer.sh --broker-list localhost:9092 --topic output
+> bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --zookeeper localhost:2181 --topic output --from-beginning
+-->
+
+## Generator ##
+The generator is a Java application using the [Producer API](https://kafka.apache.org/090/documentation.html#producerapi) for version 0.9.0 to access the Kafka stream. The required dependencies are pulled via maven. 
+
+The generator produces messages containing
+  * timestamp
+  * visited URL
+  * visitor IP
+  * visitor UID
+
+The configuration of the application happens right inside the code file: Most importantly the address of the Kafka node and the port of its message broker need to be specified.
+```java
+  Properties props = new Properties();
+  props.put("bootstrap.servers", "10.10.33.22:9092");
+```
+
+The data is sent via a *KafkaProducer* that sends a *ProducerRecord* containing a key, value pair (both consisting of strings in this case) to Kafka's *output* topic. 
+```java
+  producer.send(new ProducerRecord<String, String>("output", "pageviews", NewMessage()));
+```
+
+The generator can be started via Maven :
+```bash
+  $ mvn package
+  $ mvn exec:java
+```
+In Eclipse you have to execute it with *Run As* > *Maven Build*. The build goal has to be set to *exec:java*. The application will run in a loop until it is interrupted.
+
+*Sidenote: The generator was first written using the Spring Stream Connector for Kafka. This approach was interestingly more complicated to implement and brought other difficulties with it as well: The format of the output was extended by some special characters that did not belong to the message and complicated parsing. On top of that the setup required a specific version of Kafka, that did not match the one required by Flume. The version discrepancy was the final reason why I dropped the Spring approach.*
+
+
+
+# **STREAM PROCESSING** #
+<!-- TODO: components of this "end"/machine -->
+## Storm ##
+
+https://spark.apache.org/streaming/
+
+
+
+# **BATCH PROCESSING** #
+<!-- TODO: components of this "end"/machine -->
+
+## Flume ##
+Apache Flume aims to be a distributed service to collect, aggregate and move large amounts of data (usually logs) with a focus on streaming data flows. This is the second software component that resides on the same node as Hadoop in this setup.
 
 This application is redirecting data from an input ("source") via a buffer ("channel") to an output ("sink"). All of the three components there (source, channel and sink) can be configured to take on various forms. The input can be an input file, a data stream, a HTTP source and others. In this case we will use the connector to read from a kafka topic (the one where the generator put the simulated HTTP logs). The sink can also be configured in different ways. We will use it to write the data to the HDFS so that Hadoop can process it from there. The directories required for Flume's output do not need to be preformatted with Hadoop, but will be created on the HDFS dynamically. The current Flume version [1.7.0] restricts the kafka-version to [0.9.x] which is not the latest version but has so far not made a noticeable difference.
 
 <!-- TODO: config files from flume erklären + welche Schritte werden ausgeführt -->
-
-
 
 <!--
 flume guides:
@@ -218,41 +285,52 @@ end flume (forcefully):
 CHECK HADOOP:
   /opt/hadoop-2.7.3/bin/hadoop fs -ls  hdfs://10.10.33.11:9000/
   > neue directories werden automatisch angelegt, müssen nicht vor-formatiert werden.
-
-
-
 -->
 
-#### Kafka Machine ####
-Kafka is a distributed message broker for real-time data feeds with high throughput. In this setup it will run on a single node for the sake of simplicity. The very small amounts of data put in allow for this to work out well. Kafka depends on Apache Zookeeper, a distributed configuration and synchronization service. Zookeeper stores information about topics, brokers, consumers etc. for Kafka.
+## Hadoop ##
+The Apache Hadoop software library focuses on reliable, scalable, distributed computing and the processing of large data sets.
 
-An instruction for a basic setup can be found here: [Kafka Single Node](https://kafka.apache.org/quickstart). Java and Scala need to be installed beforehand. The Scala version is important for the choice of the Kafka ver
+One component of Hadoop is HDFS, the Hadoop File System, which is a special distributed filesystem that will allow for big amounts of data to be written on an abstract file space. This filesystem stores the data that was read from the input stream before batch processing the received data with map/reduce jobs.
+
+In this scope a single machine "cluster" is used for Hadoop to run on. The Hadoop master only needs java to be installed in order to run. The full documentation for this setup can be found here: [Hadoop Single Cluster](https://hadoop.apache.org/docs/r2.7.3/hadoop-project-dist/hadoop-common/SingleCluster.html).
+
+SSH is configured before setting up Hadoop so that it will not perform strict host checking or ask for the adding of unknown hosts since the Hadoop scripts are supposed to run headless without any user interaction. These settings simplify the setup for this demo's purpose, but would be unfitting for any other environment since they create a serious security concern.
+
+During the setup of the Hadoop machine the following steps are performed:
+* Install Java
+* Download and unpack Hadoop
+* Create or replace settings files
+  * set JAVA_HOME
+  * set filesystem replication to 1 and make it accessible on port **9000**
+  * make the map/reduce job tracker accessible via port **9001**
+  * format HDFS
+  * start the Name- and DataNode daemons
+  * create the first HDFS directories
+  * create cron jobs for the Node daemons, so they start automatically every time the machine boots
+
+The status of the NameNode can be viewed via the web interface on port [50070](http://10.10.33.11:50070), where you can also find a very helpful browser for the filesystem.
+
+If the connection to Hadoop fails, you can ssh into the machine and check whether Hadoop is listening on the ports given above.
+```bash
+  $ netstat -anlp | grep LISTEN
 ```
 
-Kafka's server settings also need to be edited, so that it will also accept connections from outside inside the *config/serer.properties*
-```properties
-  listeners=PLAINTEXT://0.0.0.0:9092
-```
-
-Kafka comes with a ready-to-use Zookeeper executable which is needed to run Kafka. In this scenario one Zookeeper server instance runs along with a Kafka server instance, both in daemon mode. Zookeeper will be accessible via the forwarded port **2181** and Kafka's broker list can be accessed on port **9092**. Those server daemons will also be started via cron every time the machine boots.
-
-<!--
-local test:
-
-> cd /opt/kafka_***
-> bin/zookeeper-server-start.sh config/zookeeper.properties
-> bin/kafka-server-start.sh config/server.properties
-
-> bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 1 --topic output
-> bin/kafka-topics.sh --list --zookeeper localhost:2181
-
-> bin/kafka-console-producer.sh --broker-list localhost:9092 --topic output
-> bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --zookeeper localhost:2181 --topic output --from-beginning
--->
 
 
 
 
+
+# **OUTPUT** #
+<!-- TODO: components of this "end"/machine -->
+## Reader ##
+
+
+
+
+
+
+
+<!-- TODO: wozu gehört cassandra? Hat jede Seite ihre eigene Instanz > siehe todo-notes -->
 #### Cassandra ####
 Cassandra is a reliable distributed database system.
 
@@ -268,38 +346,6 @@ evtl. listen Adresse ändern, damit von außen auf cass zugegriffen werden kann 
 
 
 
-#### Storm ####
-
-https://spark.apache.org/streaming/
-
-
-
-## **External Apps** ##
-
-### Generator ###
-The generator uses the Kafka [Producer API](https://kafka.apache.org/090/documentation.html#producerapi) for version 0.9.0 and pulls it via maven. The generator produces messages containing
-  * timestamp
-  * visited URL
-  * visitor IP
-  * visitor UID
-
-The configuration of the application happens right inside the code file: Most importantly the address of the Kafka node and the port of its message broker need to be specified.
-
-The data is sent via a *KafkaProducer*. The Producer sends a *ProducerRecord* containing a key, value pair - both consisting of strings - to the *output* topic on Kafka for as long as it is not interrupted.
-```java
-  producer.send(new ProducerRecord<String, String>("output", "pageviews", NewMessage()));
-```
-
-The generator can be started via Maven :
-```bash
-  $ mvn package
-  $ mvn exec:java
-```
-
-In Eclipse you have to execute it with *Run As* > *Maven Build*. The build goal has to be set to *exec:java*.
-
-
-### Batch Processing ###
 
 
 
@@ -405,6 +451,7 @@ Notizen:
 * README
   * TODOs bearbeiten und raus
   * Kommentare raus
+  * Überschriften nummerieren
 
 * CLEANUP
   * remove tar.gz files etc. from puppet directories
