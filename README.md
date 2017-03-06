@@ -85,6 +85,7 @@ Leave the SSH environment on the VM via *CTRL-D* or one of the following:
 logout
 exit
 ```
+You will by default be logged in as user *vagrant* with password *vagrant* and sudo rights.
 
 Delete the VMs (including all used files except the box's base-image):
 ```bash
@@ -273,7 +274,7 @@ https://spark.apache.org/streaming/
 
 
 
-## **Spring Apps** ##
+## **External Apps** ##
 
 ### Generator ###
 The generator uses the Kafka [Producer API](https://kafka.apache.org/090/documentation.html#producerapi) for version 0.9.0 and pulls it via maven. The generator produces messages containing
@@ -294,6 +295,9 @@ The generator can be started via Maven :
   $ mvn package
   $ mvn exec:java
 ```
+
+In Eclipse you have to execute it with *Run As* > *Maven Build*. The build goal has to be set to *exec:java*.
+
 
 ### Batch Processing ###
 
@@ -346,8 +350,9 @@ automatisch startender batch-job:
   - processed alle 5 minuten die aufrufe der aktuellen Stunde
   - überschreibt die alten Aufrufe
 
-
-
+Notizen:
+  - die job dateien werden direkt im Hadoop verzeichnis abgelegt, obwohl unschön, weil undesired behaviour auftritt, wenn die Dateien außerhalb angelegt / compiled werden etc
+  - Der job failt mit Exception, wenn das entsprechende input directory nicht existiert > beispielsweise, weil der generator in der aktuellen stunde noch nicht aktiv gewesen ist.
 
 
 -->
@@ -357,29 +362,13 @@ automatisch startender batch-job:
 
 
 
-
+<!--
 # TODO #
 ## up next ##
 * map/reduce job
-  * Schritte automatisieren
-    * Einrichtung
-      * pageviews.java kopieren
-      * javac & jar
-    * cron: automatisch starten alle xy Zeitintervall
-  * output
-    * URL Aufrufe pro Stunde (key=time, value=url oder umgekehrt ?)
-    * in Cassandra schreiben
-      * erster key? (partition = url)
-      * range abfragen möglich machen? (damit zeitspannen ausgegeben werden können)
-      * output überschreiben > job läuft alle 5 minuten, fasst aber die gesamte vergangene Stunde zusammen
-  * general
-
-
+  * DOCUMENTATION
 
 ## after that ... #
-* hadoop
-  * make flume (re)connect to kafka (even if it didn't work during startup ...)
-
 * storm (stream processing)
   * read from kafka
   * process
@@ -387,6 +376,18 @@ automatisch startender batch-job:
   https://storm.apache.org/releases/current/Tutorial.html
   https://storm.apache.org/releases/current/Setting-up-development-environment.html
   https://storm.apache.org/releases/current/Creating-a-new-Storm-project.html
+
+* cassandra
+  * Verteilung? je einen mit auf hadoop und storm nodes? extra mit "doppelter" Datenbank?
+  * > wie viel RAM brauchen die Maschinen wirklich ... evtl. reduzieren?
+
+* hadoop
+  * make flume (re)connect to kafka (even if it didn't work during startup ...)
+  * output
+    * in Cassandra schreiben
+    * erster key? (partition = url)
+    * range abfragen möglich machen? (damit zeitspannen ausgegeben werden können)
+    * output überschreiben > job läuft alle 5 minuten, fasst aber die gesamte vergangene Stunde zusammen
 
 * Daten auslesen
   * command line tool (Java App) für manuelle Abfrage mit URL und Uhrzeit als Parameter
@@ -398,6 +399,7 @@ automatisch startender batch-job:
 
 * generator:
   * TEST mit vorgegebener Liste von Zugriffen zur Validierung (bestehende Liste erweitern!)
+  * > muss eigentlich nicht über den generator geschehen, kann einfach in den hdfs://input ordner gepackt werden und dann den batch manuell starten
 
 ## Letzte Schritte #
 * README
@@ -423,4 +425,4 @@ automatisch startender batch-job:
   > Systemübersicht
     * Wo sind welche Dateien und Anwendungen
     * Wie können laufende Prozesse "beobachtet" werden
- 
+-->
