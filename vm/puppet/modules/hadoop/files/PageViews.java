@@ -22,8 +22,6 @@ public class PageViews {
       if (value.toString() != "" ) {
         String[] result = value.toString().split(",");
         if (result.length > 1) {
-          System.out.println(">>>> length = " + result.length);
-          System.out.println(">>>> word = " + result[1]);
           word.set(result[1]);
           context.write(word, one);
         }
