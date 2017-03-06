@@ -65,7 +65,7 @@ config.vm.box = "ubuntu/trusty64"
 The amount of memory available to a single vm is specified via a virtualbox specific variable:
 ```ruby
 config.vm.provider "virtualbox" do |vb|
-    vb.memory = "2048"
+  vb.memory = "2048"
 end
 ```
 
@@ -158,23 +158,23 @@ config.vm.define "machine02" do |mach02|
 
 Inside the specified module_path subdirectories for those separate modules are created. The following scheme is being used:
 ```
-  puppet
-  |
-  └── manifests
-  |   | example-machine.pp
-  |
-  └── modules
-      |
-      └── "module01"
-      |   |
-      |   └── manifests
-      |   |   | init.pp
-      |   |
-      |   └── files
-      |       | ...
-      |
-      └── "module02"
-          | ...
+puppet
+|
+└── manifests
+|   | example-machine.pp
+|
+└── modules
+    |
+    └── "module01"
+    |   |
+    |   └── manifests
+    |   |   | init.pp
+    |   |
+    |   └── files
+    |       | ...
+    |
+    └── "module02"
+        | ...
 ```
 
 Puppet offers many different options that help the user to achieve the desired state of the targeted machine. The Documentation for all Puppet Resource Types can be found here: [Puppet Reference](https://docs.puppet.com/puppet/4.8/type.html)
@@ -192,8 +192,8 @@ An instruction for a basic setup can be found here: [Kafka Single Node](https://
 For this simple setup the server settings for Kafka need to be edited only in a minimal way. The address for the listener needs to be edited, so that it will accept connections from outside the local machine and it needs to be told the address of the zookeeper instance (which runs on the same machine as Kafka in this setup):
 *config/server.properties*
 ```properties
-  listeners=PLAINTEXT://0.0.0.0:9092
-  zookeeper.connect=10.10.33.22:2181
+listeners=PLAINTEXT://0.0.0.0:9092
+zookeeper.connect=10.10.33.22:2181
 ```
 
 Kafka comes with a ready-to-use Zookeeper executable which is needed to run Kafka. In this scenario one Zookeeper server instance runs along with a Kafka server instance, both in daemon mode. Zookeeper will be accessible via the forwarded port **2181** and Kafka's broker list can be accessed on port **9092**. Those server daemons will be started via a bash startupscript and a cron entry every time the machine boots.
@@ -216,26 +216,26 @@ local test:
 The generator is a Java application using the [Producer API](https://kafka.apache.org/090/documentation.html#producerapi) for version 0.9.0 to access the Kafka stream. The required dependencies are pulled via maven. 
 
 The generator produces messages containing
-  * timestamp
-  * visited URL
-  * visitor IP
-  * visitor UID
+* timestamp
+* visited URL
+* visitor IP
+* visitor UID
 
 The configuration of the application happens right inside the code file: Most importantly the address of the Kafka node and the port of its message broker need to be specified.
 ```java
-  Properties props = new Properties();
-  props.put("bootstrap.servers", "10.10.33.22:9092");
+Properties props = new Properties();
+props.put("bootstrap.servers", "10.10.33.22:9092");
 ```
 
 The data is sent via a *KafkaProducer* that sends a *ProducerRecord* containing a key, value pair (both consisting of strings in this case) to Kafka's *output* topic. 
 ```java
-  producer.send(new ProducerRecord<String, String>("output", "pageviews", NewMessage()));
+producer.send(new ProducerRecord<String, String>("output", "pageviews", NewMessage()));
 ```
 
 The generator can be started via Maven :
 ```bash
-  $ mvn package
-  $ mvn exec:java
+$ mvn package
+$ mvn exec:java
 ```
 In Eclipse you have to execute it with *Run As* > *Maven Build*. The build goal has to be set to *exec:java*. The application will run in a loop until it is interrupted.
 
@@ -251,41 +251,47 @@ https://spark.apache.org/streaming/
 
 
 
+
+
+
+
 # **BATCH PROCESSING** #
-<!-- TODO: components of this "end"/machine -->
+The main component to this part of the system is the Apache Hadoop software, that provides the distributed file system HDFS for the storage of incoming data and processes the data in regular intervals via map/reduce jobs. In addition to that a Flume Agent will run on the same machine. Flume is responsible for reading the data from the Kafka stream and write it to the HDFS, from where Hadoop's map/reduce jobs will read it.
 
 ## Flume ##
-Apache Flume aims to be a distributed service to collect, aggregate and move large amounts of data (usually logs) with a focus on streaming data flows. This is the second software component that resides on the same node as Hadoop in this setup.
+Apache Flume aims to be a distributed service to collect, aggregate and move large amounts of data (usually logs) with a focus on streaming data flows.
 
-This application is redirecting data from an input ("source") via a buffer ("channel") to an output ("sink"). All of the three components there (source, channel and sink) can be configured to take on various forms. The input can be an input file, a data stream, a HTTP source and others. In this case we will use the connector to read from a kafka topic (the one where the generator put the simulated HTTP logs). The sink can also be configured in different ways. We will use it to write the data to the HDFS so that Hadoop can process it from there. The directories required for Flume's output do not need to be preformatted with Hadoop, but will be created on the HDFS dynamically. The current Flume version [1.7.0] restricts the kafka-version to [0.9.x] which is not the latest version but has so far not made a noticeable difference.
+This application is redirecting data from an input ("source") via a buffer ("channel") to an output ("sink"). All of the three components there (source, channel and sink) can be configured to take on various forms. The input can be an input file, a data stream, a HTTP source and others. In this case I use the connector to read from a kafka topic (the one where the generator put the simulated HTTP logs). The sink can also be configured in different ways. I use it to write the data to the HDFS so that Hadoop can process it from there. The directories required for Flume's output do not need to be preformatted with Hadoop, but will be created on the HDFS dynamically. The current Flume version [1.7.0] restricts the kafka-version to [0.9.x] which is not the latest version but has so far not made a noticeable difference. The basic user guide can be found on the [project's homepage](https://flume.apache.org/FlumeUserGuide.html). 
 
-<!-- TODO: config files from flume erklären + welche Schritte werden ausgeführt -->
+The application requires the directory containing Hadoop to be accessible via the environment variable:
+```bash
+$ export HADOOP_HOME=/opt/hadoop-2.7.3
+```
 
-<!--
-flume guides:
-  https://flume.apache.org/FlumeUserGuide.html
-  > unterstützt nur kafka 0.9.x bisher !!
+The source (input) is configured to read from the Kafka node and its specified topic:
+```conf
+agent1.sources.kafka-source.type = org.apache.flume.source.kafka.KafkaSource
+agent1.sources.kafka-source.kafka.bootstrap.servers = 10.10.33.22:9092
+agent1.sources.kafka-source.kafka.topics = output
+```
 
-needed before:
-  // set "systemwide" for all users !
-  export HADOOP_HOME=/opt/hadoop-2.7.3
-run flume:
-    /opt/apache-flume-1.7.0-bin/bin/flume-ng agent --conf /opt/apache-flume-1.7.0-bin/conf -conf-file /opt/apache-flume-1.7.0-bin/conf/flume-kafka-source-hdfs-sink.conf --name agent1
+The sink (output) is configured to write to the HDFS instance into a specified directory:
+```conf
+agent1.sinks.hdfs-sink.type = hdfs
+agent1.sinks.hdfs-sink.hdfs.path = hdfs://10.10.33.11:9000/input/%y-%m-%d/%H
+```
 
-    bin/flume-ng agent --conf conf -conf-file conf/flume-kafka-source-hdfs-sink.conf --name agent1 -Dflume.root.logger=INFO,console
+Flume starts when the created cron job runs a startup-script shared with the Hadoop Daemons at every boot of the virtual machine. The created config file and the contained *agent* need to be specified explicitely. For debug purposes the Flume Agent can be started manually with additional options:
+```bash
+$ /opt/apache-flume-1.7.0-bin/bin/flume-ng agent --conf /opt/apache-flume-1.7.0-bin/conf -conf-file /opt/apache-flume-1.7.0-bin/conf/flume-kafka-source-hdfs-sink.conf --name agent1 -Dflume.root.logger=INFO,console
+```
 
-  DEBUG:
-    bin/flume-ng agent --conf conf -conf-file conf/test-kafka.conf --name agent1 -Dflume.root.logger=INFO,console
+The easiest way to exit Flume while it is running in the background:
+```bash
+$ ps -ef|grep flume
+$ kill -9 pid
+```
 
-
-end flume (forcefully):
-  ps -ef|grep flume
-  kill -9 pid
-
-CHECK HADOOP:
-  /opt/hadoop-2.7.3/bin/hadoop fs -ls  hdfs://10.10.33.11:9000/
-  > neue directories werden automatisch angelegt, müssen nicht vor-formatiert werden.
--->
 
 ## Hadoop ##
 The Apache Hadoop software library focuses on reliable, scalable, distributed computing and the processing of large data sets.
@@ -312,21 +318,117 @@ The status of the NameNode can be viewed via the web interface on port [50070](h
 
 If the connection to Hadoop fails, you can ssh into the machine and check whether Hadoop is listening on the ports given above.
 ```bash
-  $ netstat -anlp | grep LISTEN
+$ netstat -anlp | grep LISTEN
 ```
 
+### MapReduce ###
+The MapReduce job is a small program that is applied to a set of data by Hadoop. The job is written in some language, compiled, packaged and then passed to Hadoop to be executed. In this case I wrote Java Code, compiled and packed it. Hadoop then receives the packed jar. I give a short introduction to the different steps of the processing and very quick explanations on their general behaviour. A much more extensive explanation for the jobs, functions etc. are available at the project's homepage: [MapReduce tutorial](https://hadoop.apache.org/docs/r2.7.3/hadoop-mapreduce-client/hadoop-mapreduce-client-core/MapReduceTutorial.html).
+
+Hadoop runs the MapReduce job in regular intervals that are triggered by a cron task. Due to the very minimal scope of this setup the jobs run every five minutes and compute the number of calls for every called URL since the last full hour: A job running at 14:30 will process all log files from 14:00 to 14:30 and overwrite the output of any previous jobs run after 14:00 o'clock. This procedure is quite "unrealistic" (as in it does not match the processes in a production environment), but it is an an easy way to make progress and outputs visible without making anyone wait for hours to see any results from the batch jobs - despite the extremely small amounts of data being processed.
+
+To run the jobs a Java JKD is required as well as the following environment variables:
+```bash
+$ export JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64
+$ export PATH=${JAVA_HOME}/bin:${PATH}
+$ export HADOOP_CLASSPATH=${JAVA_HOME}/lib/tools.jar
+```
+
+The MapReduce jobs process the data stored on HDFS in the way the job was programmed to. In this case the input data consists of multiple files with multiple lines of logentries. Each line contains one message with one set of data the generator puts out (see above). The job currently only receives the input and output directories as parameter and goes to work from there.
+```java
+FileInputFormat.addInputPath(job, new Path(args[0]));
+FileOutputFormat.setOutputPath(job, new Path(args[1]));
+```
+
+The job receives a class that contains the job functions and that is to be read from the built jar. The subclasses for the Mapper, Combiner and Reducer are also specified. 
+```java
+job.setJarByClass(PageViews.class);
+job.setMapperClass(TokenizerMapper.class);
+job.setCombinerClass(IntSumReducer.class);
+job.setReducerClass(IntSumReducer.class);
+```
+
+The first step to the batch job is the map phase. The implementation of this class extends an existing *Mapper* class whose *map()* function receives and outputs key-value pairs. This Mapper is very straight forward: It receives lines from the files inside the specified directories (see above) and splits those up. Since the input sets (lines) contain much more data than we actually need, only one of the split portions is used. The HDFS directories already sort the logs as desired by time of creation so that the Mapper only needs to process the URLs and count count their occurences. This mapper will output a pair of *&lt;String, Number&gt;* where the String represents the URL. The number is always "one", since at this stage no accumulation takes place and every single input is processed individually.
+```java
+public static class TokenizerMapper extends Mapper<Object, Text, Text, IntWritable>{
+  private final static IntWritable one = new IntWritable(1);
+  private Text word = new Text();
+
+  public void map(Object key, Text value, Context context)
+  throws IOException, InterruptedException {
+    if (value.toString() != "" ) {
+      String[] result = value.toString().split(",");
+      if (result.length > 1) {
+        word.set(result[1]);
+        context.write(word, one);
+      }
+    }
+  }
+}
+```
+An example for the output of this function:
+  &lt;URL1, 1&gt;
+  &lt;URL2, 1&gt;
+  &lt;URL3, 1&gt;
+  &lt;URL1, 1&gt;
+
+The second step to the batch job is the combine phase. Since multiple files are being processed, there will be a map output for every single file. The combiner takes the output for single files and "reduces" those: In this example the CombinerClass is set to the same class the ReducerClass is set to. For an explanation of the class see the next section. The Combiner receives all pairs that the Mapper produced for a single file and puts pairs out again.
+
+The thirt step to the batch job is the reduce phase.  The implementation of this class extends an existing *Reducer* class whose *reduce()* function receives and outputs key-value pairs. In contrast to the combine phase this one receives the pairs for all the files together and accumulates the numbers for all of them.
+```java
+public static class IntSumReducer extends Reducer<Text,IntWritable,Text,IntWritable> {
+  private IntWritable result = new IntWritable();
+
+  public void reduce(Text key, Iterable<IntWritable> values, Context context)
+  throws IOException, InterruptedException {
+    int sum = 0;
+    for (IntWritable val : values) {
+      sum += val.get();
+    }
+    result.set(sum);
+    context.write(key, result);
+  }
+}
+```
+An example for the output of this function:
+  &lt;URL1, 2&gt;
+  &lt;URL2, 1&gt;
+  &lt;URL3, 1&gt;
 
 
+This *.java* file is compiled with Hadoop and the Javac compiler and then packed into a *.jar*:
+```bash
+$ bin/hadoop com.sun.tools.javac.Main WordCount.java
+$ jar cf wc.jar WordCount*.class
+```
+
+The job is then started with the created *.jar* file:
+```bash
+  $ bin/hadoop jar pv.jar PageViews /input /output
+```
+
+*Sidenote: In this setup the source files and all the compiled, packed etc. files are stored directly inside Hadoop's home directory. This is quite messy, but putting them into separate directories, like a 'jobs' subdirectory lead to a lot of undesired behaviour and errors.*
+
+For testing purposes separate directories can be created and filled with files from the local file system:
+```bash
+$ bin/hdfs dfs -mkdir /input
+$ bin/hdfs dfs -copyFromLocal input01 /input
+```
+
+The results can then be viewed via:
+```bash
+$ bin/hadoop fs -cat /output/part-r-00000
+```
+
+*Sidenote: If the specified input directory DOES NOT exist or the output directory DOES already exist the job will fail.*
+
+
+<!-- TODO: rm old hdfs://outputdir entfernen, wenn mal direkt nach cassandra schreibt etc. -->
 
 
 
 # **OUTPUT** #
 <!-- TODO: components of this "end"/machine -->
 ## Reader ##
-
-
-
-
 
 
 
@@ -340,71 +442,10 @@ Running the application as root user is not recommended and will probably lead t
 
 <!-- https://www.digitalocean.com/community/tutorials/how-to-install-cassandra-and-run-a-single-node-cluster-on-a-ubuntu-vps -->
 
-<!-- TODO
-evtl. listen Adresse ändern, damit von außen auf cass zugegriffen werden kann (bisher nicht getestet)
--->
+<!-- TODO evtl. listen Adresse ändern, damit von außen auf cass zugegriffen werden kann (bisher nicht getestet) -->
 
 
 
-
-
-
-<!--
-  * https://hadoop.apache.org/docs/r2.7.3/hadoop-mapreduce-client/hadoop-mapreduce-client-core/MapReduceTutorial.html
-
-  * HAVE JDK installed (not only headless JRE) !!!
-
-set via puppet (automated):
-  $ export JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64
-  $ export PATH=${JAVA_HOME}/bin:${PATH}
-  $ export HADOOP_CLASSPATH=${JAVA_HOME}/lib/tools.jar
-
-compile and create jar:
-  $ bin/hadoop com.sun.tools.javac.Main WordCount.java
-  $ jar cf wc.jar WordCount*.class
-
-move files to hdfs:
-  $ bin/hdfs dfs -mkdir /input
-  $ bin/hdfs dfs -copyFromLocal /opt/hadoop-2.7.3/input01 /input
-  $ bin/hdfs dfs -copyFromLocal /opt/hadoop-2.7.3/input02 /input
-
-output file contents from hdfs:
-  $ bin/hadoop fs -cat /input/input01
-
-start job on hadoop via prepared jar:
-  $ bin/hadoop jar wc.jar WordCount /input /output
-
-output the results:
-  $ bin/hadoop fs -cat /output/part-r-00000
-
-cleanup to go again:
-  $ bin/hdfs dfs -rm -r /output
-
-
-
-
-konkret:
-  nano PageViews.java
-  bin/hadoop com.sun.tools.javac.Main PageViews.java
-  jar cf pv.jar PageViews*.class
-  bin/hdfs dfs -rm -r /output
-  bin/hadoop jar pv.jar PageViews /input /output
-  bin/hadoop fs -cat /output/part-r-00000
-
-
-automatisch startender batch-job:
-  - processed alle 5 minuten die aufrufe der aktuellen Stunde
-  - überschreibt die alten Aufrufe
-
-Notizen:
-  - die job dateien werden direkt im Hadoop verzeichnis abgelegt, obwohl unschön, weil undesired behaviour auftritt, wenn die Dateien außerhalb angelegt / compiled werden etc
-  - Der job failt mit Exception, wenn das entsprechende input directory nicht existiert > beispielsweise, weil der generator in der aktuellen stunde noch nicht aktiv gewesen ist.
-
-
--->
-
-
-### Stream Processing ###
 
 
 
@@ -452,6 +493,7 @@ Notizen:
   * TODOs bearbeiten und raus
   * Kommentare raus
   * Überschriften nummerieren
+  * Zeichen checken (eckige Klammern, </> Zeichen etc.)
 
 * CLEANUP
   * remove tar.gz files etc. from puppet directories
