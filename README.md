@@ -33,7 +33,6 @@ Change into the *vm* directory containing the *Vagrantfile* and start all the vi
 ```bash
   $ vagrant up
 ```
-There 
 
 ### Generator ###
 Change into the *generator* directory and run it 
@@ -68,6 +67,8 @@ config.vm.provider "virtualbox" do |vb|
   vb.memory = "2048"
 end
 ```
+
+*Sidenote: Please make sure, you have at least 10GB of free space on your host's hard drive. The virtual machines by default have a virtual drive with a maximum size of 40GB, which could potentially lead to problems on your machine. Since the storage for the drive will be allocated dynamically and the current configuration allows the drives to be around 2GB each, there should not be any problem.*
 
 All further setup, the so called provisioning of the machines will be left to puppet (see chapter below).
 
@@ -247,12 +248,16 @@ In Eclipse you have to execute it with *Run As* > *Maven Build*. The build goal 
 <!-- TODO: components of this "end"/machine -->
 ## Storm ##
 <!--
-* set up a storm cluster: https://storm.apache.org/releases/1.0.3/Setting-up-a-Storm-cluster.html
-  > download and unpack
-  > set config files
+https://storm.apache.org/releases/1.0.3/Setting-up-a-Storm-cluster.html
+  * download
+  * unpack
+  * set/copy configs
+  * start supervised daemons (restart when quit)
+    * bin/storm nimbus
+    * bin/storm supervisor
+    * bin/storm ui
 
-
-
+  > nimbus needs zookeeper to run (kafka node)
 
 
 
@@ -261,7 +266,7 @@ In Eclipse you have to execute it with *Run As* > *Maven Build*. The build goal 
 
 TUTORIALS
   https://storm.apache.org/releases/1.0.3/index.html
-  https://storm.apache.org/releases/1.0.3/storm-kafka.html > angegebene unterstützte version für kafka ist 0.8.x ... AAAARHG 
+  https://storm.apache.org/releases/1.0.3/storm-kafka.html > angegebene kafka version = 0.8.x 
   https://storm.apache.org/releases/current/Tutorial.html
 
 DOWNLOAD BINARY
@@ -509,6 +514,9 @@ Running the application as root user is not recommended and will probably lead t
 * generator:
   * TEST mit vorgegebener Liste von Zugriffen zur Validierung (bestehende Liste erweitern!)
   * > muss eigentlich nicht über den generator geschehen, kann einfach in den hdfs://input ordner gepackt werden und dann den batch manuell starten
+
+* storm
+  * "daemonize" storm jobs (nimbus, supervisor, ui) > write upstart-init script for ubuntu
 
 ## Letzte Schritte #
 * README

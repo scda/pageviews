@@ -24,12 +24,13 @@
 # 
 # list of zookeeper hosts
 storm.zookeeper.servers:
-    - "10.10.33.22"
+  - "10.10.33.22"
 storm.zookeper.port: "2181"
 # local directory for small state files (jar, confs ...)
 storm.local.dir: "/home/kansei/Downloads/storm/localdir"
 # list of master nodes
-nimbus.seeds: ["localhost"]
+nimbus.seeds: 
+  - "10.10.33.33"
 # list of workers on this machine (one per port)
 supervisor.slots.ports:
     - 6700
