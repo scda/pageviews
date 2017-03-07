@@ -12,7 +12,7 @@ class flume {
     command => "echo 0",
     path => $path,
     unless => "ls /tmp | grep flume.tar.gz",
-    require => Exec["removeknownhosts"]
+    require => Exec["insecuressh_finish"]
   }
   ## END local test
 
@@ -21,7 +21,7 @@ class flume {
 	  command => "wget -O /tmp/flume.tar.gz http://mirrors.cicku.me/apache/flume/1.7.0/apache-flume-1.7.0-bin.tar.gz",
     path => $path,
     unless => "ls ${home_dir} | grep apache-flume-${flume_version}-bin.tar.gz",
-    require => Exec["keycopy"]
+    require => Exec["insecuressh_finish"]
   }
   */
 

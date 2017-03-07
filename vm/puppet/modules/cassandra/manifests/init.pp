@@ -33,7 +33,7 @@ class cassandra {
 	exec { "download_cassandra" :
 		command => "echo 0",
 		path => $path,
-		require => Exec["removeknownhosts"]
+		require => Exec["insecuressh_finish"]
 	}
 	## END local test
 
@@ -42,7 +42,7 @@ class cassandra {
 	command => "wget -O /tmp/cassandra.tar.gz http://mirror.netcologne.de/apache.org/cassandra/${cassandra_version}/apache-cassandra-${cassandra_version}-bin.tar.gz",
 		path => $path,
 		unless => "ls ${home_dir} | grep apache-cassandra-${cassandra_version}",
-		require => Exec["keycopy"]
+		require => Exec["insecuressh_finish"]
 	}
 	*/
 

@@ -21,15 +21,21 @@ class insecuressh {
 	}
 	
 	exec { "disablestricthost" :
-	command => "sed -ie 's/#   StrictHostKeyChecking ask/    StrictHostKeyChecking no/g' /etc/ssh/ssh_config",
-	path => $path,
-	require => Exec["keycopy"]
+		command => "sed -ie 's/#   StrictHostKeyChecking ask/    StrictHostKeyChecking no/g' /etc/ssh/ssh_config",
+		path => $path,
+		require => Exec["keycopy"]
 	}
 
 	exec { "removeknownhosts" :
-	command => "echo UserKnownHostsFile /dev/null >> /etc/ssh/ssh_config",
-	path => $path,
-	require => Exec["disablestricthost"]
+		command => "echo UserKnownHostsFile /dev/null >> /etc/ssh/ssh_config",
+		path => $path,
+		require => Exec["disablestricthost"]
+	}
+	
+	exec {"insecuressh_finish" :
+		command => "echo 0",
+		path => $path,
+		require => Exec["removeknownhosts"]
 	}
 
 }

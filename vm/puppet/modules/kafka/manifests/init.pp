@@ -14,7 +14,7 @@ class kafka {
     command => "echo 0",
     path => $path,
     unless => "ls /tmp | grep scala.tar.gz",
-    require => Exec["removeknownhosts"]
+    require => Exec["insecuressh_finish"]
   }
 	file {
     "/tmp/kafka.tar.gz":
@@ -25,7 +25,7 @@ class kafka {
     command => "echo 0",
     path => $path,
     unless => "ls /tmp | grep scala.tar.gz",
-    require => Exec["keycopy"]
+    require => Exec["insecuressh_finish"]
   }
   ## END local test
 
@@ -34,13 +34,13 @@ class kafka {
 	  command => "wget -O /tmp/scala.tar.gz http://downloads.lightbend.com/scala/${scala_version_major}.${scala_version_minor}/scala-${scala_version_major}.${scala_version_minor}.tgz",
     path => $path,
     unless => "ls ${home_dir} | grep scala-${scala_version_major}.${scala_version_minor}",
-    require => Exec["keycopy"]
+    require => Exec["insecuressh_finish"]
   }
 	exec { "download_kafka" :
 	  command => "wget -O /tmp/kafka.tar.gz http://mirrors.ae-online.de/apache/kafka/${kafka_version}/kafka_${scala_version_major}-${kafka_version}.tgz",
     path => $path,
     unless => "ls ${home_dir} | grep kafka_${scala_version_major}-${kafka_version}",
-    require => Exec["keycopy"]
+    require => Exec["insecuressh_finish"]
   }
   */
 

@@ -17,7 +17,7 @@ class hadoop {
     command => "echo 0",
     path => $path,
     unless => "ls /tmp | grep hadoop.tar.gz",
-    require => Exec["removeknownhosts"]
+    require => Exec["insecuressh_finish"]
   }
   ## END local test
 
@@ -26,7 +26,7 @@ class hadoop {
   command => "wget -O /tmp/hadoop.tar.gz http://mirrors.cicku.me/apache/hadoop/common/hadoop-${hadoop_version}/hadoop-${hadoop_version}.tar.gz",
     path => $path,
     unless => "ls /opt | grep hadoop-${hadoop_version}",
-    require => Exec["keycopy"]
+    require => Exec["insecuressh_finish"]
   }
   */
 
