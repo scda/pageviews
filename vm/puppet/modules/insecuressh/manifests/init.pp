@@ -2,15 +2,15 @@ class insecuressh {
 
 	## setup passwordless ssh access
 	exec { "keygen" :
-	command => "ssh-keygen -t rsa -P '' -f /root/.ssh/id_rsa",
-	path => $path,
-	unless => "ls /root/.ssh | grep id_rsa"
+		command => "ssh-keygen -t rsa -P '' -f /root/.ssh/id_rsa",
+		path => $path,
+		unless => "ls /root | grep insecuressh_finished"
 	}
 
 	exec { "keycopy" :
-	command => "cat /root/.ssh/id_rsa.pub >> /root/.ssh/authorized_keys",
-	path => $path,
-	require => Exec["keygen"]
+		command => "cat /root/.ssh/id_rsa.pub >> /root/.ssh/authorized_keys",
+		path => $path,
+		require => Exec["keygen"]
 	}
 
 	file {
@@ -33,7 +33,7 @@ class insecuressh {
 	}
 	
 	exec {"insecuressh_finish" :
-		command => "echo 0",
+		command => "touch /root/insecuressh_finished",
 		path => $path,
 		require => Exec["removeknownhosts"]
 	}
