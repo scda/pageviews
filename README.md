@@ -246,14 +246,36 @@ In Eclipse you have to execute it with *Run As* > *Maven Build*. The build goal 
 # **STREAM PROCESSING** #
 <!-- TODO: components of this "end"/machine -->
 ## Storm ##
-
-https://spark.apache.org/streaming/
-
-
-
-
+<!--
+* set up a storm cluster: https://storm.apache.org/releases/1.0.3/Setting-up-a-Storm-cluster.html
+  > download and unpack
+  > set config files
 
 
+
+
+
+
+
+
+
+TUTORIALS
+  https://storm.apache.org/releases/1.0.3/index.html
+  https://storm.apache.org/releases/1.0.3/storm-kafka.html > angegebene unterstützte version für kafka ist 0.8.x ... AAAARHG 
+  https://storm.apache.org/releases/current/Tutorial.html
+
+DOWNLOAD BINARY
+  http://ftp.halifax.rwth-aachen.de/apache/storm/apache-storm-1.0.3/apache-storm-1.0.3.tar.gz
+  * unpack
+  * add ../bin to $PATH
+
+
+PROBLEM KAFKA VERSION
+  * Falls mit 0.9 nicht geht: 
+    * 2 Kafka Instanzen mit unterschiedlichen Versionen schalten?
+    * 1 Kafka Instanz 0.8, rechts direkt auf HDFS schreiben (vom Generator aus), Flume eliminieren
+
+-->
 
 # **BATCH PROCESSING** #
 The main component to this part of the system is the Apache Hadoop software, that provides the distributed file system HDFS for the storage of incoming data and processes the data in regular intervals via map/reduce jobs. In addition to that a Flume Agent will run on the same machine. Flume is responsible for reading the data from the Kafka stream and write it to the HDFS, from where Hadoop's map/reduce jobs will read it.
@@ -366,10 +388,10 @@ public static class TokenizerMapper extends Mapper<Object, Text, Text, IntWritab
 }
 ```
 An example for the output of this function:
-  &lt;URL1, 1&gt;
-  &lt;URL2, 1&gt;
-  &lt;URL3, 1&gt;
-  &lt;URL1, 1&gt;
+  &lt;URL1, 1&gt;  
+  &lt;URL2, 1&gt;  
+  &lt;URL3, 1&gt;  
+  &lt;URL1, 1&gt;  
 
 The second step to the batch job is the combine phase. Since multiple files are being processed, there will be a map output for every single file. The combiner takes the output for single files and "reduces" those: In this example the CombinerClass is set to the same class the ReducerClass is set to. For an explanation of the class see the next section. The Combiner receives all pairs that the Mapper produced for a single file and puts pairs out again.
 
@@ -390,9 +412,9 @@ public static class IntSumReducer extends Reducer<Text,IntWritable,Text,IntWrita
 }
 ```
 An example for the output of this function:
-  &lt;URL1, 2&gt;
-  &lt;URL2, 1&gt;
-  &lt;URL3, 1&gt;
+  &lt;URL1, 2&gt;  
+  &lt;URL2, 1&gt;  
+  &lt;URL3, 1&gt;  
 
 
 This *.java* file is compiled with Hadoop and the Javac compiler and then packed into a *.jar*:
