@@ -51,7 +51,7 @@ Vagrant creates the virtual machines and performs the basic initial configuratio
 
 The following setup will be achieved by executing the vagrant and puppet scripts:
 <!-- TODO: create, upload and link image -->
-![system overview](https://github.com/scda/pageviews/blob/master/documentation/images/architecture.png)
+![system overview](https://raw.githubusercontent.com/scda/pageviews/master/documentation/images/architecture.png)
 
 ## Vagrant ##
 The initial steps of the setup are being described within the *Vagrantfile* in the root directory:
