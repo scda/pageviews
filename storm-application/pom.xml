@@ -36,10 +36,11 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-  		<groupId>org.apache.storm</groupId>
-  		<artifactId>storm-core</artifactId>
-  		<version>1.0.2</version>
-  		<scope>provided</scope>
+  	  <groupId>org.apache.storm</groupId>
+	  <artifactId>storm-core</artifactId>
+	  <version>1.0.3</version>
+	  <scope>provided</scope>
 	</dependency>
+
   </dependencies>
 </project>

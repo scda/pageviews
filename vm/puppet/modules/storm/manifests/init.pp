@@ -3,19 +3,34 @@ class storm {
   $storm_version= "1.0.3"
   $python_version="2.6.6"
   
+  exec { "jdk8-ppa" :
+		command => 'add-apt-repository ppa:openjdk-r/ppa',
+		path => $path,
+		before => Exec["apt-get update"]
+	}
+  
   exec { "apt-get update" :
     command => "/usr/bin/apt-get update",
     require => Exec["insecuressh_finish"]
   }
   
+  /*
   package { "openjdk-7-jdk" :
+	  ensure => present,
+	  require => Exec["apt-get update"],
+    before => Package["openjdk-8-jdk"]
+	} 
+  */ 
+  
+  package { "openjdk-8-jdk" :
 	  ensure => present,
 	  require => Exec["apt-get update"]
 	}  
   
-  package { "build-essential" :
-    ensure => present,
-    require => Exec["apt-get update"]
+  exec { "package_finish" :
+    command => "echo 0",
+    path => $path,
+    require => [ Package["openjdk-8-jdk"] ]
   }
   
   ## BEGIN local test
@@ -39,6 +54,11 @@ class storm {
     path => $path,
     unless => "ls ${home_dir} | grep apache-storm-${storm_version}",
     require => Exec["insecuressh_finish"]
+  }
+  
+  file { 
+    "/root/storm-master.zip" :
+    source => "puppet:///modules/storm/storm-master.zip"
   }
   ## END local test
 
@@ -76,7 +96,7 @@ class storm {
     command => "/tmp/Python-${python_version}/install_python.sh",
     cwd => "/tmp/Python-${python_version}",
     path => $path,
-    require => File["/tmp/Python-${python_version}/install_python.sh"],
+    require => [ File["/tmp/Python-${python_version}/install_python.sh"], Exec["package_finish"] ],
     unless => "ls /usr/local/bin | grep python2.6"
   }
   
@@ -133,17 +153,18 @@ class storm {
   exec { "start-storm-nimbus" :
     command => "start storm-nimbus",
     path => $path,
-    require => [ File["/etc/init/storm-nimbus.conf"], File["${home_dir}/apache-storm-${storm_version}/conf/storm-env.sh"], File["${home_dir}/apache-storm-${storm_version}/conf/storm.yaml"] ]
+    require => [ File["/etc/init/storm-nimbus.conf"], File["${home_dir}/apache-storm-${storm_version}/conf/storm.yaml"], Exec["package_finish"] ]
   }
+  
   exec { "start-storm-supervisor" :
     command => "start storm-supervisor",
     path => $path,
-    require => [ File["/etc/init/storm-supervisor.conf"], File["${home_dir}/apache-storm-${storm_version}/conf/storm-env.sh"], File["${home_dir}/apache-storm-${storm_version}/conf/storm.yaml"] ]
+    require => [ File["/etc/init/storm-supervisor.conf"], File["${home_dir}/apache-storm-${storm_version}/conf/storm.yaml"], Exec["package_finish"] ]
   }
   exec { "start-storm-ui" :
     command => "start storm-ui",
     path => $path,
-    require => [ File["/etc/init/storm-ui.conf"], File["${home_dir}/apache-storm-${storm_version}/conf/storm-env.sh"], File["${home_dir}/apache-storm-${storm_version}/conf/storm.yaml"] ]
+    require => [ File["/etc/init/storm-ui.conf"], File["${home_dir}/apache-storm-${storm_version}/conf/storm.yaml"], Exec["package_finish"] ]
   }
   
 }
