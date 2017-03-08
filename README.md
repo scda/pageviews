@@ -247,8 +247,21 @@ In Eclipse you have to execute it with *Run As* > *Maven Build*. The build goal 
 # **STREAM PROCESSING** #
 <!-- TODO: components of this "end"/machine -->
 ## Storm ##
+<!-- DESCRIPTION
+Apache Storm is a free and open source distributed realtime computation system. Storm makes it easy to reliably process unbounded streams of data, doing for realtime processing what Hadoop did for batch processing.
+
+A Storm cluster is superficially similar to a Hadoop cluster. Whereas on Hadoop you run "MapReduce jobs", on Storm you run "topologies". "Jobs" and "topologies" themselves are very different -- one key difference is that a MapReduce job eventually finishes, whereas a topology processes messages forever (or until you kill it).
+
+There are two kinds of nodes on a Storm cluster: the master node and the worker nodes. The master node runs a daemon called "Nimbus" that is similar to Hadoop's "JobTracker". Nimbus is responsible for distributing code around the cluster, assigning tasks to machines, and monitoring for failures.
+
+Each worker node runs a daemon called the "Supervisor". The supervisor listens for work assigned to its machine and starts and stops worker processes as necessary based on what Nimbus has assigned to it. Each worker process executes a subset of a topology; a running topology consists of many worker processes spread across many machines.
+-->
+
 <!--
+BASICS (ENVIRONMENT ETC.)
+https://storm.apache.org/releases/current/Tutorial.html
 https://storm.apache.org/releases/1.0.3/Setting-up-a-Storm-cluster.html
+  >>> virtual node <<<
   * download
   * unpack
   * set/copy configs
@@ -256,29 +269,36 @@ https://storm.apache.org/releases/1.0.3/Setting-up-a-Storm-cluster.html
     * bin/storm nimbus
     * bin/storm supervisor
     * bin/storm ui
+  > nimbus needs zookeeper to run (kafka node) !
+  > logs in /$STORM_HOME$/logs
 
-  > nimbus needs zookeeper to run (kafka node)
-
-
-
-
-
-
-TUTORIALS
-  https://storm.apache.org/releases/1.0.3/index.html
-  https://storm.apache.org/releases/1.0.3/storm-kafka.html > angegebene kafka version = 0.8.x 
-  https://storm.apache.org/releases/current/Tutorial.html
-
-DOWNLOAD BINARY
-  http://ftp.halifax.rwth-aachen.de/apache/storm/apache-storm-1.0.3/apache-storm-1.0.3.tar.gz
+  >>> local host <<<
+  * download storm release
   * unpack
-  * add ../bin to $PATH
+  * set config (nimbus.seeds: ["10.10.33.33"])
+  * add $STORM_DIR/bin$ to $PATH$
+  * use [storm jar ...] to "commit" topologies to the cluster
+
+TOPOLOGY CODE
+https://storm.apache.org/releases/current/Creating-a-new-Storm-project.html
+https://github.com/apache/storm/tree/v1.0.2/examples/storm-starter
+  * install maven, git, ruby, python, nodejs
+  * install java-8 and set it as $JAVA_HOME   ->    export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
+  * git clone
+  * "mvn clean install -DskipTests=true" from storm-top-level directory (package will fail otherwise with "cannot resolve dependencies")
+  * "mvn package" from $STORM$/examples/storm-starter
+  * 
+  
+
+https://storm.apache.org/releases/current/Running-topologies-on-a-production-cluster.html
+  * /opt/apache-storm-1.0.3/bin/storm jar /root/storm-master/examples/storm-starter/target/storm-starter-2.0.0-SNAPSHOT.jar org.apache.storm.starter.ExclamationTopology -local
 
 
-PROBLEM KAFKA VERSION
-  * Falls mit 0.9 nicht geht: 
-    * 2 Kafka Instanzen mit unterschiedlichen Versionen schalten?
-    * 1 Kafka Instanz 0.8, rechts direkt auf HDFS schreiben (vom Generator aus), Flume eliminieren
+
+INPUT FROM KAFKA
+https://storm.apache.org/releases/1.0.3/storm-kafka.html > angegebene kafka version = 0.8.x 
+  * version 0.8 ... testen!
+
 
 -->
 
