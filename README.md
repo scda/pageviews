@@ -51,7 +51,7 @@ Vagrant creates the virtual machines and performs the basic initial configuratio
 
 The following setup will be achieved by executing the vagrant and puppet scripts:
 <!-- TODO: create, upload and link image -->
-![pageviews machine setup ](https://github.com/adam-p/markdown-here/raw/master/src/common/images/icon48.png "machine setup")
+![system overview](https://github.com/scda/pageviews/blob/master/documentation/images/architecture.png)
 
 ## Vagrant ##
 The initial steps of the setup are being described within the *Vagrantfile* in the root directory:
@@ -463,7 +463,7 @@ $ bin/hdfs dfs -copyFromLocal input01 /input
 
 The results can then be viewed via:
 ```bash
-$ bin/hadoop fs -cat /output/part-r-00000
+$ bin/hadoop fs -cat /output/.../part-r-00000
 ```
 
 *Sidenote: If the specified input directory DOES NOT exist or the output directory DOES already exist the job will fail.*
@@ -499,12 +499,8 @@ Running the application as root user is not recommended and will probably lead t
 <!--
 # TODO #
 ## up next ##
-* map/reduce job
-  * DOCUMENTATION
-
-## after that ... #
 * storm (stream processing)
-  * read from kafka
+  * read from kafka ... 
   * process
   * write to cassandra  https://endocode.com/blog/2015/04/08/building-a-stream-processing-pipeline-with-kafka-storm-and-cassandra-part-1-introducing-the-components/
   https://storm.apache.org/releases/current/Tutorial.html
@@ -524,7 +520,8 @@ Running the application as root user is not recommended and will probably lead t
     * output überschreiben > job läuft alle 5 minuten, fasst aber die gesamte vergangene Stunde zusammen
 
 * Daten auslesen
-  * command line tool (Java App) für manuelle Abfrage mit URL und Uhrzeit als Parameter
+  * command line tool (Java App) für manuelle Abfrage
+  * URL und Uhrzeit als Parameter (VON BIS !!!)
   * Ausgabe beide Seiten getrennt (führen atm die selbe Verarbeitung durch)
 
 * README ausbauen:
@@ -532,11 +529,8 @@ Running the application as root user is not recommended and will probably lead t
   * wie/wo werden sie in dieser Konstellation eingesetzt? (+Bild)
 
 * generator:
-  * TEST mit vorgegebener Liste von Zugriffen zur Validierung (bestehende Liste erweitern!)
-  * > muss eigentlich nicht über den generator geschehen, kann einfach in den hdfs://input ordner gepackt werden und dann den batch manuell starten
 
-* storm
-  * "daemonize" storm jobs (nimbus, supervisor, ui) > write upstart-init script for ubuntu
+  * > muss eigentlich nicht über den generator geschehen, kann einfach in den hdfs://input ordner gepackt werden und dann den batch manuell starten
 
 ## Letzte Schritte #
 * README
