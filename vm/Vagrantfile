@@ -12,7 +12,7 @@ Vagrant.configure("2") do |config|
   config.vm.box = "ubuntu/trusty64"
 
   # shared folder between host (param01) and guest (param02)
-  #config.vm.synced_folder "./guestData/", "/vagrant_data"
+  config.vm.synced_folder "./guestData/", "/vagrant_data"
 
   # virtualbox specific configuration
   config.vm.provider "virtualbox" do |vb|
