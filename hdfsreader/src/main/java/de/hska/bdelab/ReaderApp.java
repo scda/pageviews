@@ -1,5 +1,7 @@
 package de.hska.bdelab;
 
+import java.util.concurrent.ThreadLocalRandom;
+
 import de.hska.bdelab.CassandraHelper;
 
 
@@ -12,23 +14,14 @@ public class ReaderApp
 	}
 	
 	
-	private static void TestCassandraOut() {
-		// table and keys are hardcoded into cassandraHelper ... !
-		String host = "10.10.33.44";
-		
+	private static void TestCassandraOut() {		
         CassandraHelper client = new CassandraHelper();
+        client.createConnection();
         
-        //Create the connection
-        client.createConnection(host);
+        System.out.println("starting writes.");
+        client.addKey("http://bdelab.hska.de/pageviewtest/", ThreadLocalRandom.current().nextInt(0, 255));
         
-        System.out.println("starting writes");
-        
-        //Add test value
-        client.addKey("test12345");
-        
-        //Close the connection
         client.closeConnection();
-        
-        System.out.println("Write Complete");
+        System.out.println("write Complete.");
 	}
 }
