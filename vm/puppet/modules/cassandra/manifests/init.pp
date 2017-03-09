@@ -58,6 +58,12 @@ class cassandra {
 		ensure => present,
 		require => Exec["unpack_cassandra"]
 	}
+	
+	file { "${home_dir}/apache-cassandra-${cassandra_version}/conf/cassandra.yaml" :
+		source => "puppet:///modules/cassandra/cassandra.yaml",
+		owner => "cassandra",
+		before => Exec["start_cassandra"]
+	}
 
 	file { "chown-home" :
 		path => "${home_dir}/apache-cassandra-${cassandra_version}",
@@ -91,7 +97,7 @@ class cassandra {
 	}
 
 	cron { "cron-cassandra" :
-		command => "${home_dir}/apache-cassandra-${cassandra_version}/bin/cassandra -R",
+		command => "${home_dir}/apache-cassandra-${cassandra_version}/bin/cassandra",
 		user => "cassandra",
 		special => "reboot",
 		ensure => present,

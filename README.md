@@ -50,7 +50,6 @@ During this project's course the decision was met to use Vagrant combined with P
 Vagrant creates the virtual machines and performs the basic initial configurations while Puppet takes care of any further machine configuration in detail including the installation of all used software components.
 
 The following setup will be achieved by executing the vagrant and puppet scripts:
-<!-- TODO: create, upload and link image -->
 ![system overview](https://raw.githubusercontent.com/scda/pageviews/master/documentation/images/architecture.png)
 
 ## Vagrant ##
@@ -221,6 +220,11 @@ The generator produces messages containing
 * visited URL
 * visitor IP
 * visitor UID
+
+A sample output line looks like this:
+```
+Sun Mar 05 11:49:51 CET 2017,http://bdelab.hska.de/batch,200.85.175.21,f1ecc1e3-bdd8-40de-9477-e2dba56af7a5
+```
 
 The configuration of the application happens right inside the code file: Most importantly the address of the Kafka node and the port of its message broker need to be specified.
 ```java
@@ -487,9 +491,27 @@ Cassandra runs on a single node as well. Cassandra requires Java (JDK 8) and Pyt
 
 Running the application as root user is not recommended and will probably lead to errors. Therefore the user *cassandra* is created to start the service. For this service to run after every boot a cron job is set up. One *cassandra* directory is created inside */var/lib/* and */var/log* each. *cassandra* is assigned as owner of the created directories and also the applications home directory (where it was unpacked to).
 
-<!-- https://www.digitalocean.com/community/tutorials/how-to-install-cassandra-and-run-a-single-node-cluster-on-a-ubuntu-vps -->
+<!-- 
 
-<!-- TODO evtl. listen Adresse ändern, damit von außen auf cass zugegriffen werden kann (bisher nicht getestet) -->
+
+https://www.packtpub.com/books/content/writing-cassandra-hdfs-using-hadoop-map-reduce-job
+edit in $CASSANDRA_HOME$/conf/cassandra.yaml:
+  "listen_address=10.10.33.44" 
+  " seeds:"10.10.33.44" "
+  " rpc_address: 10.10.33.44"
+  " start_native_transport: true "
+
+prepare db:
+  bin/cqlsh 10.10.33.44
+  > CREATE KEYSPACE keytest WITH REPLICATION = { 'class' : 'NetworkTopologyStrategy', 'datacenter1' : 3 };
+  > USE keytest;
+  > CREATE TABLE keytable (key varchar, PRIMARY KEY (key) );
+  > select * from keytable;
+
+checkup with:
+  bin/nodetool status
+  netstat -alnp | grep LISTEN
+-->
 
 
 
