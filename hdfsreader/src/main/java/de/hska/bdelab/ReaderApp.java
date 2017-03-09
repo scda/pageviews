@@ -5,15 +5,17 @@ import de.hska.bdelab.CassandraHelper;
 
 public class ReaderApp 
 {
-    //private static CassandraHelper cclient = new CassandraHelper();
+    
 	
 	public static void main(String[] args) {
-		/*cclient.createConnection(""); 
-		cclient.addKey("testkey.");
-	    cclient.closeConnection();*/
+		TestCassandraOut();
+	}
+	
+	
+	private static void TestCassandraOut() {
+		// table and keys are hardcoded into cassandraHelper ... !
+		String host = "10.10.33.44";
 		
-		  String host = "10.10.33.44";
-	        
         CassandraHelper client = new CassandraHelper();
         
         //Create the connection
