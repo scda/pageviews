@@ -15,8 +15,8 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 
 import de.hska.bdelab.CassandraHelper;
 
-public class PageViews {
-  private static CassandraHelper cclient = new CassandraHelper();
+public class PageviewsWriterApp {
+  private static CassandraHelper dbClient = new CassandraHelper();
 	
   public static class TokenizerMapper extends Mapper<Object, Text, Text, IntWritable>{
     private final static IntWritable one = new IntWritable(1);
@@ -35,7 +35,7 @@ public class PageViews {
     
     //Sets up the Cassandra connection to be used by the mapper
     public void setup(Context context) {
-        cclient.createConnection(); 
+        dbClient.createConnection(); 
     }
 
     
@@ -52,19 +52,19 @@ public class PageViews {
       }
       result.set(sum);
       context.write(key, result);
-      cclient.addKey(key.toString(), sum);
+      dbClient.addKey(key.toString(), sum);
     }
     
     //Closes the Cassandra connection after the mapper is done
     public void cleanup(Context context) {
-        cclient.closeConnection();
+        dbClient.closeConnection();
     }
   }
 
   public static void main(String[] args) throws Exception {
     Configuration conf = new Configuration();
     Job job = Job.getInstance(conf, "pageviews");
-    job.setJarByClass(PageViews.class);
+    job.setJarByClass(PageviewsWriterApp.class);
     job.setMapperClass(TokenizerMapper.class);
     job.setCombinerClass(IntSumReducer.class);
     job.setReducerClass(IntSumReducer.class);

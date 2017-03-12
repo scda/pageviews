@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Host;
 import com.datastax.driver.core.Metadata;
+import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.exceptions.NoHostAvailableException;
 import com.datastax.driver.core.exceptions.QueryExecutionException;
@@ -21,8 +22,11 @@ public class CassandraHelper {
     private Session session;
     
     private final String keyspace = "pageviewkeyspace";
-    private final String table = "pageviewtable";
+    private final String tablename = "pageviewtable";
     private final String node = "10.10.33.44";
+    
+    private PreparedStatement preparedInsert;
+    private String insertQuery = "INSERT INTO " + this.keyspace + "." + this.tablename + " (date, url, calls) VALUES(?,?,?)";
 
     public Session getSession()  {
         LOG.info("Starting getSession()");
@@ -47,22 +51,36 @@ public class CassandraHelper {
         }
         
         this.session = cluster.connect();
+        
+        checkSetup();
+        this.preparedInsert = this.session.prepare(insertQuery);
     }
 
     public void closeConnection() {
         cluster.close();
     }
+    
+    private void checkSetup() {
+    	// check for existing keyspace (and create if not)
+    	String keyspaceQuery = "CREATE KEYSPACE IF NOT EXISTS ? WITH REPLICATION = { 'class' : 'NetworkTopologyStrategy', 'datacenter1' : 3 };";
+    	PreparedStatement ps = this.session.prepare(keyspaceQuery);
+    	this.session.execute(ps.bind(this.keyspace));
+    	
+    	//check for existing table (and create if not)
+    	String tableQuery = "CREATE TABLE IF NOT EXISTS ? (time timestamp PRIMARY KEY, url text, calls int);";
+    	ps = this.session.prepare(tableQuery);
+    	this.session.execute(ps.bind(this.tablename));
+    }
+
 
     public void addKey(String url, int number) {
         Session session = this.getSession();
         
         if(url.length()>0) {
-            try {
-            	String query = "INSERT INTO " + keyspace + "." + table + " (date, url, calls) VALUES('" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yy-MM-dd_HH:mm")) + "', '" + url + "', " + Integer.toString(number) + ");";
-                System.out.println("QUERY: " + query);
-            	session.execute(query);
-            	//session.execute(this.preparedStatement.bind(key) );
-                //session.executeAsync(this.preparedStatement.bind(key));
+            try {            	
+            	// submit new data, will overwrite old entries (if any)
+                session.execute(this.preparedInsert.bind(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH"))+":00", url, number));
+                /*session.executeAsync(this.preparedStatement.bind(key));*/
             } catch (NoHostAvailableException e) {
                 System.out.printf("No host in the %s cluster can be contacted to execute the query.\n", 
                         session.getCluster());

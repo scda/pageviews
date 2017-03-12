@@ -3,11 +3,11 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>de.hska.bdelab</groupId>
-    <artifactId>hdfsreader</artifactId>
+    <artifactId>dbwriter</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <packaging>jar</packaging>
 
-    <name>hdfsreader</name>
+    <name>dbwriter</name>
 
     <build>
         <plugins>
@@ -29,13 +29,6 @@
                     </execution>
                 </executions>
             </plugin>
-            <plugin>
-			    <groupId>org.codehaus.mojo</groupId>
-			    <artifactId>exec-maven-plugin</artifactId>
-			    <configuration>
-			      <mainClass>de.hska.bdelab.ReaderApp</mainClass>
-			    </configuration>
-			   </plugin>
         </plugins>
     </build>
 
@@ -43,12 +36,6 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
     <dependencies>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>3.8.1</version>
-            <scope>test</scope>
-        </dependency>
         <dependency>
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-hdfs</artifactId>
