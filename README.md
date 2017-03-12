@@ -3,8 +3,7 @@ A technology demonstrator for the "Big Data Engineering" course at Hochschule Ka
 
 This project contains a small cluster of virtual machines and small jobs to be executed on them with batch and stream processing. The input data is being randomly generated to simulate pageviews on a webserver. Technologies used are:
 * Virtualbox, Vagrant and Puppet
-* Zookeeper, Kafka, Hadoop, Cassandra, Spark and Storm
-* Spring projects (Spring Cloud, Stream, ...)
+* Zookeeper, Kafka, Hadoop, Flume, Cassandra, Storm
 
 
 # **QUICKSTART** #
@@ -31,18 +30,23 @@ Version used during development: 3.3.9
 ### VMs ###
 Change into the *vm* directory containing the *Vagrantfile* and start all the virtual machines 
 ```bash
-  $ vagrant up
+$ vagrant up
 ```
 
 ### Generator ###
 Change into the *generator* directory and run it 
 ```bash
-  $ mvn package
-  $ mvn exec:java
+$ mvn package
+$ mvn exec:java
 ```
 
 ### Reader ###
-<!-- TODO -->
+Change into the *reader* directory and run it 
+```bash
+$ mvn package
+$ mvn exec:java
+```
+
 
 # VIRTUAL ENVIRONMENT #
 During this project's course the decision was met to use Vagrant combined with Puppet and therefore base the setup of the virtual environment on a *description* rather than creating a big pre-filled binary file for the VM - keeping in mind that the project aims towards being able to be distributed as easy as possible to the students.
@@ -80,19 +84,19 @@ In addition to the instructions from the *Quickstart* above, I want to give a li
 
 Start the virtual machine (via terminal from within the root directory which contains the *Vagrantfile*) :
 ```bash
-vagrant up
+$ vagrant up
 ```
 The first start will take a few minutes since all necessary files such as the OS images and all other programs running inside the virtual machines have to be downloaded and the machines need to be set up.
 
 #### Proxy ####
 Set an environment variable first:
 ```bash
-export HTTP_PROXY=http://USER:PASSWORD@PROXY_URL:PORT/
+$ export HTTP_PROXY=http://USER:PASSWORD@PROXY_URL:PORT/
 ```
 
 The virtual machine will need the vagrant plugin *proxyconf* to connect through a proxy, which can be installed directly from the command line:
 ```bash
-vagrant plugin install vagrant-proxyconf
+$ vagrant plugin install vagrant-proxyconf
 ```
 
 The *Vagrantfile* then has to be edited accordingly (simply uncomment and edit the already given lines according to your needs):
@@ -107,37 +111,37 @@ The *Vagrantfile* contains multiple virtual machines to be set up. Some of the c
 
 Start the VMs:
 ```bash
-vagrant up [NAME optional]
+$ vagrant up [NAME optional]
 ```
 Suspend or shut the VMs down:
 ```bash
-vagrant suspend [NAME optional]
-vagrant halt [NAME optional]
+$ vagrant suspend [NAME optional]
+$ vagrant halt [NAME optional]
 ```
 Restart the machines (e.g. in connection with *--provision* to re-execute the provisioning scripts (see section *Puppet* below)):
 ```bash
-vagrant reload [NAME optional]
+$ vagrant reload [NAME optional]
 ```
 
 Access the VM *NAME* via SSH:
 ```bash
-vagrant ssh NAME
+$ vagrant ssh NAME
 ```
 Leave the SSH environment on the VM via *CTRL-D* or one of the following:
 ```bash
-logout
-exit
+$ logout
+$ exit
 ```
 You will by default be logged in as user *vagrant* with password *vagrant* and sudo rights.
 
 Delete the VMs (including all used files except the box's base-image):
 ```bash
-vagrant destroy [NAME optional]
+$ vagrant destroy [NAME optional]
 ```
 
 See more commands and get infos about them (as usual):
 ```bash
-vagrant [COMMAND optional] -h
+$ vagrant [COMMAND optional] -h
 ```
 
 ## **Puppet** ##
@@ -198,19 +202,25 @@ zookeeper.connect=10.10.33.22:2181
 
 Kafka comes with a ready-to-use Zookeeper executable which is needed to run Kafka. In this scenario one Zookeeper server instance runs along with a Kafka server instance, both in daemon mode. Zookeeper will be accessible via the forwarded port **2181** and Kafka's broker list can be accessed on port **9092**. Those server daemons will be started via a bash startupscript and a cron entry every time the machine boots.
 
-<!--
-local test:
 
-> cd /opt/kafka_***
-> bin/zookeeper-server-start.sh config/zookeeper.properties
-> bin/kafka-server-start.sh config/server.properties
+The applications are started from the KAFKA_HOME directory via:
+```bash
+bin/zookeeper-server-start.sh config/zookeeper.properties
+bin/kafka-server-start.sh config/server.properties
+```
 
-> bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 1 --topic output
-> bin/kafka-topics.sh --list --zookeeper localhost:2181
+You can create a new topic and check upon the creation with:
+```bash
+bin/kafka-topics.sh --create --zookeeper 10.10.33.22:2181 --replication-factor 1 --partitions 1 --topic test
+bin/kafka-topics.sh --list --zookeeper 10.10.33.22:2181
+```
 
-> bin/kafka-console-producer.sh --broker-list localhost:9092 --topic output
-> bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --zookeeper localhost:2181 --topic output --from-beginning
--->
+There are two command line tools, that allow you to write to or read from a given topic very easily:
+```bash
+bin/kafka-console-producer.sh --broker-list 10.10.33.22:9092 --topic test
+bin/kafka-console-consumer.sh --bootstrap-server 10.10.33.22:9092 --zookeeper 10.10.33.22:2181 --topic test --from-beginning
+```
+
 
 ## Generator ##
 The generator is a Java application using the [Producer API](https://kafka.apache.org/090/documentation.html#producerapi) for version 0.9.0 to access the Kafka stream. The required dependencies are pulled via maven. 
@@ -247,64 +257,6 @@ In Eclipse you have to execute it with *Run As* > *Maven Build*. The build goal 
 *Sidenote: The generator was first written using the Spring Stream Connector for Kafka. This approach was interestingly more complicated to implement and brought other difficulties with it as well: The format of the output was extended by some special characters that did not belong to the message and complicated parsing. On top of that the setup required a specific version of Kafka, that did not match the one required by Flume. The version discrepancy was the final reason why I dropped the Spring approach.*
 
 
-
-# **STREAM PROCESSING** #
-<!-- TODO: components of this "end"/machine -->
-## Storm ##
-<!-- DESCRIPTION
-Apache Storm is a free and open source distributed realtime computation system. Storm makes it easy to reliably process unbounded streams of data, doing for realtime processing what Hadoop did for batch processing.
-
-A Storm cluster is superficially similar to a Hadoop cluster. Whereas on Hadoop you run "MapReduce jobs", on Storm you run "topologies". "Jobs" and "topologies" themselves are very different -- one key difference is that a MapReduce job eventually finishes, whereas a topology processes messages forever (or until you kill it).
-
-There are two kinds of nodes on a Storm cluster: the master node and the worker nodes. The master node runs a daemon called "Nimbus" that is similar to Hadoop's "JobTracker". Nimbus is responsible for distributing code around the cluster, assigning tasks to machines, and monitoring for failures.
-
-Each worker node runs a daemon called the "Supervisor". The supervisor listens for work assigned to its machine and starts and stops worker processes as necessary based on what Nimbus has assigned to it. Each worker process executes a subset of a topology; a running topology consists of many worker processes spread across many machines.
--->
-
-<!--
-BASICS (ENVIRONMENT ETC.)
-https://storm.apache.org/releases/current/Tutorial.html
-https://storm.apache.org/releases/1.0.3/Setting-up-a-Storm-cluster.html
-  >>> virtual node <<<
-  * download
-  * unpack
-  * set/copy configs
-  * start supervised daemons (restart when quit)
-    * bin/storm nimbus
-    * bin/storm supervisor
-    * bin/storm ui
-  > nimbus needs zookeeper to run (kafka node) !
-  > logs in /$STORM_HOME$/logs
-
-  >>> local host <<<
-  * download storm release
-  * unpack
-  * set config (nimbus.seeds: ["10.10.33.33"])
-  * add $STORM_DIR/bin$ to $PATH$
-  * use [storm jar ...] to "commit" topologies to the cluster
-
-TOPOLOGY CODE
-https://storm.apache.org/releases/current/Creating-a-new-Storm-project.html
-https://github.com/apache/storm/tree/v1.0.2/examples/storm-starter
-  * install maven, git, ruby, python, nodejs
-  * install java-8 and set it as $JAVA_HOME   ->    export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
-  * git clone
-  * "mvn clean install -DskipTests=true" from storm-top-level directory (package will fail otherwise with "cannot resolve dependencies")
-  * "mvn package" from $STORM$/examples/storm-starter
-  * 
-  
-
-https://storm.apache.org/releases/current/Running-topologies-on-a-production-cluster.html
-  * /opt/apache-storm-1.0.3/bin/storm jar /root/storm-master/examples/storm-starter/target/storm-starter-2.0.0-SNAPSHOT.jar org.apache.storm.starter.ExclamationTopology -local
-
-
-
-INPUT FROM KAFKA
-https://storm.apache.org/releases/1.0.3/storm-kafka.html > angegebene kafka version = 0.8.x 
-  * version 0.8 ... testen!
-
-
--->
 
 # **BATCH PROCESSING** #
 The main component to this part of the system is the Apache Hadoop software, that provides the distributed file system HDFS for the storage of incoming data and processes the data in regular intervals via map/reduce jobs. In addition to that a Flume Agent will run on the same machine. Flume is responsible for reading the data from the Kafka stream and write it to the HDFS, from where Hadoop's map/reduce jobs will read it.
@@ -454,7 +406,7 @@ $ jar cf wc.jar WordCount*.class
 
 The job is then started with the created *.jar* file:
 ```bash
-  $ bin/hadoop jar pv.jar PageViews /input /output
+$ bin/hadoop jar pv.jar PageViews /input /output
 ```
 
 *Sidenote: In this setup the source files and all the compiled, packed etc. files are stored directly inside Hadoop's home directory. This is quite messy, but putting them into separate directories, like a 'jobs' subdirectory lead to a lot of undesired behaviour and errors.*
@@ -473,111 +425,141 @@ $ bin/hadoop fs -cat /output/.../part-r-00000
 *Sidenote: If the specified input directory DOES NOT exist or the output directory DOES already exist the job will fail.*
 
 
-<!-- TODO: rm old hdfs://outputdir entfernen, wenn mal direkt nach cassandra schreibt etc. -->
+# **STREAM PROCESSING** #
+On the stream processing node only Apache Storm is running.
+
+## Storm ##
+Apache Storm is a free and open source distributed realtime computation system. It continuously processes unbounded incoming streams of data. A Storm cluster runs *topologies*, which are somewhat compareable to Hadoops *MapReduce jobs*.
+
+In this case there is only one node for all the Storm components, but usually there are master and worker nodes. The master node runs a daemon called *Nimbus* (similar to Hadoop's *JobTracker*). Nimbus is responsible for distributing code around the cluster, assigning tasks to machines, and monitoring for failures. Each worker node runs a daemon called *Supervisor* which listens for work and manages *worker processes*. Each *worker process* executes a certain subset of a topology. The topology is therefore usually spread across multiple machines. This overview can also be found a little more in-depth at the [Storm Project's homepage](https://storm.apache.org/releases/current/Tutorial.html).
+
+In this project the most important settings for the storm "cluster" are the settings for the connections to zookeeper and the nimbus seeds. Zookeeper is required for Storm to run which is why Storm will access the Zookeeper instance running on the *input node* that is also being used by Kafka. The nimbus seeds are obviously singular in this case and only running on the very same machine, as the rest of the Storm components:
+```yaml
+storm.zookeeper.servers:
+  - "10.10.33.22"
+storm.zookeper.port: "2181"
+nimbus.seeds: 
+  - "10.10.33.33"
+```
+
+Storm also gets a list of ports that it can use for its workers. One port will allow Storm to spawn one worker on its machine.
+```yaml
+supervisor.slots.ports:
+  - 6700
+  - 6701
+  - 6702
+  - 6703
+```
+
+
+With those settings the Storm components can be started. Variants and explanations for those settings can be found [here](https://storm.apache.org/releases/1.0.3/Setting-up-a-Storm-cluster.html).
+
+Since Storm is a system that follow the "fail fast" premise, those need to be started as supervised daemons. In this project they are simply being started by Ubuntu's Upstart Init, which will also watch them and restart them if they fail (any exit, that is not an "Upstart stop" is viewed as fail). The configuration for those jobs can be found in */etc/init* and contain the following:
+```conf
+# start storm nimbus and restart it if failed
+description     "start and keepalive storm nimbus"
+
+start on startup
+stop on shutdown
+
+exec /opt/apache-storm-1.0.3/bin/storm nimbus
+respawn
+respawn limit 10 5
+```
+
+To start any of the processes manually one can simply use:
+```bash
+$ bin/storm nimbus
+$ bin/storm supervisor
+$ bin/storm ui
+```
+
+### Topologies ###
+Topologies to be submitted to the Storm cluster can be written in Java, Python and a few languages. The programs create a new Topology by setting up a system of Spouts and Bolts. A Spout is a data source for the Topology and a Bolt is some form of processing step on the data that came in. The spout can for example connect to a Kafka stream and read from those topics, while the Bolt can perform computations on the data sets similar to what the MapReduce functions do. By arranging and connecting the Spouts and Bolts in a specific way, the "path" to the output data is determined. Topologies will be compiled, packed and submited to the Nimbus for execution as jar files.
+
+In Java a *TopologyBuilder* is used and provided with Bolts and Spouts:
+```java
+TopologyBuilder builder = new TopologyBuilder();
+
+builder.setSpout("spout", new SomeInputSpout(), 3);
+builder.setBolt("split", new SplitSentence(), 5).shuffleGrouping("spout");
+builder.setBolt("count", new WordCount(), 8).fieldsGrouping("split", new Fields("word"));
+```
+
+The Topology classes usually extend some form of existing Topologies like the *ConfigurableTopology*. The very same goes for the Bolts and Spouts. The output data is declared within each new class.
+```java
+@Override
+public void declareOutputFields(OutputFieldsDeclarer declarer) {
+  declarer.declare(new Fields("word", "count"));
+}
+```
+
+Before submitting a Topology to the configured Nimbus the number of workers to be assigned can be specified.
 
 
 
 # **OUTPUT** #
-<!-- TODO: components of this "end"/machine -->
+The data output node only contains an instance of Cassandra. Both sides - stream and batch processing - write their data to this collection, where it can be read from.
+
+## Cassandra ##
+Cassandra is a reliable distributed database system. In this project it runs on a single node as well. Cassandra requires Java (JDK 8) and Python (curently 2.7) to be installed before going to work. The steps for a basic setup can be found here: [Cassandra Setup](https://cassandra.apache.org/doc/latest/getting_started/installing.html#installation-from-binary-tarball-files)
+
+It's advised against running the application as root user, which will probably lead to errors. Therefore the user *cassandra* is created to start the service. For this service to run after every boot a cron job is set up. One *cassandra* directory is created inside */var/lib/* and */var/log* each. *cassandra* is assigned as owner of the created directories and also the applications home directory (*/opt* in this case).
+
+Cassandra needs to be configured to be accessible from the other nodes in the conf/cassandra.yaml file:
+```yaml
+listen_address: 10.10.33.44
+[...]
+seed.provider:
+  [...]
+    - seeds: "10.10.33.44"
+rpc_address: 10.10.33.44
+start_native_transport: true
+```
+
+Cassandra is being written to from both the batch processing node and the stream processing node. In order to avoid unnecessary memory consume they both share the access to the same cassandra instance but with different keyspaces and therefore also different tables. 
+
+Cassandra can be manually edited (among other ways) by using the cqlsh tool provided by the cassandra installation. The language matches other typical database query languages.
+```cql
+$ bin/cqlsh 10.10.33.44
+> CREATE KEYSPACE pageviewkeyspace WITH REPLICATION = { 'class' : 'NetworkTopologyStrategy', 'datacenter1' : 3 };
+> USE pageviewkeyspace;
+> CREATE TABLE pageviewtable (date text PRIMARY KEY, url text, calls int);
+> select * from pageviewtable;
+```
+
+The keyspaces, tables, rows, columns etc. can be queried, edited and deleted as commonly known from other database software. To insert entries into a database (using the structures given above) with an optional "USING &lt;Option&gt;" appended:
+```cql
+$ bin/cqlsh 10.10.33.44
+> INSERT INTO pageviewkeyspace.pageviewtable (date, url, calls) VALUES('09-03-07_10:07', 'http://bdelab.hska.de/pageviewtest', 5);
+```
+
+You can check on the cassandra process with the usual system tools and additionally use the nodetool for various commands:
+```bash
+$ bin/nodetool status
+```
+
 ## Reader ##
+The reader is again a Java application like the generator. It can be run via some IDE like IntelliJ or Eclipse, but can also be started easily via Maven on the command line. It uses the Datastax API to connect to and read from the Cassandra Database. It reads the outputs on the two keyspaces that contain the outputs of the stream and batch processing.
 
+Both the Reader and the Hadoop Node access Cassandra via the Datastax API which delivers a very straightforward abstraction. It obviously needs to be provided with the essential information for the connection:
+```java
+private final String keyspace = "pageviewkeyspace";
+private final String table = "pageviewtable";
+private final String node = "10.10.33.44";
+```
 
+After that a few simple and self-explaining functions perform all of the work for the user:
+```java
+private Cluster cluster = Cluster.builder().addContactPoint(node).build();;
+private Session session = cluster.connect();
 
-<!-- TODO: wozu gehört cassandra? Hat jede Seite ihre eigene Instanz > siehe todo-notes -->
-#### Cassandra ####
-Cassandra is a reliable distributed database system.
+session.execute(query);
 
-Cassandra runs on a single node as well. Cassandra requires Java (JDK 8) and Python (curently 2.7) to be installed before going to work. The steps for a basic setup can be found here: [Cassandra Setup](https://cassandra.apache.org/doc/latest/getting_started/installing.html#installation-from-binary-tarball-files)
+cluster.close();
+```
 
-Running the application as root user is not recommended and will probably lead to errors. Therefore the user *cassandra* is created to start the service. For this service to run after every boot a cron job is set up. One *cassandra* directory is created inside */var/lib/* and */var/log* each. *cassandra* is assigned as owner of the created directories and also the applications home directory (where it was unpacked to).
-
-<!-- 
-
-
-https://www.packtpub.com/books/content/writing-cassandra-hdfs-using-hadoop-map-reduce-job
-edit in $CASSANDRA_HOME$/conf/cassandra.yaml:
-  "listen_address=10.10.33.44" 
-  " seeds:"10.10.33.44" "
-  " rpc_address: 10.10.33.44"
-  " start_native_transport: true "
-
-prepare db:
-  bin/cqlsh 10.10.33.44
-  > CREATE KEYSPACE keytest WITH REPLICATION = { 'class' : 'NetworkTopologyStrategy', 'datacenter1' : 3 };
-  > USE keytest;
-  > CREATE TABLE keytable (key varchar, PRIMARY KEY (key) );
-  > select * from keytable;
-
-checkup with:
-  bin/nodetool status
-  netstat -alnp | grep LISTEN
--->
-
-
-
-
-
-
-<!--
-# TODO #
-## up next ##
-* storm (stream processing)
-  * read from kafka ... 
-  * process
-  * write to cassandra  https://endocode.com/blog/2015/04/08/building-a-stream-processing-pipeline-with-kafka-storm-and-cassandra-part-1-introducing-the-components/
-  https://storm.apache.org/releases/current/Tutorial.html
-  https://storm.apache.org/releases/current/Setting-up-development-environment.html
-  https://storm.apache.org/releases/current/Creating-a-new-Storm-project.html
-
-* cassandra
-  * Verteilung? je einen mit auf hadoop und storm nodes? extra mit "doppelter" Datenbank?
-  * > wie viel RAM brauchen die Maschinen wirklich ... evtl. reduzieren?
-
-* hadoop
-  * make flume (re)connect to kafka (even if it didn't work during startup ...)
-  * output
-    * in Cassandra schreiben
-    * erster key? (partition = url)
-    * range abfragen möglich machen? (damit zeitspannen ausgegeben werden können)
-    * output überschreiben > job läuft alle 5 minuten, fasst aber die gesamte vergangene Stunde zusammen
-
-* Daten auslesen
-  * command line tool (Java App) für manuelle Abfrage
-  * URL und Uhrzeit als Parameter (VON BIS !!!)
-  * Ausgabe beide Seiten getrennt (führen atm die selbe Verarbeitung durch)
-
-* README ausbauen:
-  * Beschreibung der Verwendungszwecke der einzelnen Programme
-  * wie/wo werden sie in dieser Konstellation eingesetzt? (+Bild)
-
-* generator:
-
-  * > muss eigentlich nicht über den generator geschehen, kann einfach in den hdfs://input ordner gepackt werden und dann den batch manuell starten
-
-## Letzte Schritte #
-* README
-  * TODOs bearbeiten und raus
-  * Kommentare raus
-  * Überschriften nummerieren
-  * Zeichen checken (eckige Klammern, </> Zeichen etc.)
-
-* CLEANUP
-  * remove tar.gz files etc. from puppet directories
-
-* MANIFESTS
-  * remove "local test" sections from init.pp's and activate "real downloads"
-
-* TEST TEST TEST :)
-
-* ABGABE
-  * README.md als .PDF mit Slides zusammenzippen und ins Intranet hochladen
-  * Präsentation mit ein paar Slides vorbereiten (Darstellung Nodes und Ablauf etc.)
-  * github neu aufsetzen > ohne history übergeben
-
-> 14:00 Donnerstag E206 (20-30 min)
-  > "praktische" Präsentation
-  > Demo wie zu benutzen ist, wie eingerichtet wird/wurde, Konsolen: was läuft wo wie durch?
-  > Systemübersicht
-    * Wo sind welche Dateien und Anwendungen
-    * Wie können laufende Prozesse "beobachtet" werden
--->
+The query can be any query in CQL like:
+```cql
+INSERT INTO pageviewkeyspace.pageviewtable (date, url, calls) VALUES('17-03-01_13:37', 'http://bdelab.hska.de/batch', 100);
+```
