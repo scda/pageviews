@@ -76,30 +76,31 @@ public class CassandraHelper {
     	String insertQuery = "INSERT INTO " + this.keyspace + "." + tablename + " (time, url, calls) VALUES(?,?,?)";
         this.preparedInsert = this.session.prepare(insertQuery);
         
+        System.out.println("starting insert.");
+        
         // get valid timestamp: Instant.parse(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:00:00'Z'"))),
-        if(url.length()>0) {
-            try {            	
-            	// submit new data, will overwrite old entries (if any)
-            	session.executeAsync(this.preparedInsert.bind(
-            			LocalDateTime.now().getHour(),            	 
-            			url,
-            			number));
-            } catch (NoHostAvailableException e) {
-                System.out.printf("No host in the %s cluster can be contacted to execute the query.\n", 
-                        session.getCluster());
-                Session.State st = session.getState();
-                for ( Host host : st.getConnectedHosts() ) {
-                    System.out.println("In flight queries::"+st.getInFlightQueries(host));
-                    System.out.println("open connections::"+st.getOpenConnections(host));
-                }
-
-            } catch (QueryExecutionException e) {
-                System.out.println("An exception was thrown by Cassandra because it cannot " +
-                        "successfully execute the query with the specified consistency level.");
-            }  catch (IllegalStateException e) {
-                System.out.println("The BoundStatement is not ready.");
+        try {            	
+        	// submit new data, will overwrite old entries (if any)
+        	session.executeAsync(this.preparedInsert.bind(
+        			LocalDateTime.now().getHour(),            	 
+        			url,
+        			number));
+        } catch (NoHostAvailableException e) {
+            System.out.printf("No host in the %s cluster can be contacted to execute the query.\n", 
+                    session.getCluster());
+            Session.State st = session.getState();
+            for ( Host host : st.getConnectedHosts() ) {
+                System.out.println("In flight queries::"+st.getInFlightQueries(host));
+                System.out.println("open connections::"+st.getOpenConnections(host));
             }
+
+        } catch (QueryExecutionException e) {
+            System.out.println("An exception was thrown by Cassandra because it cannot " +
+                    "successfully execute the query with the specified consistency level.");
+        }  catch (IllegalStateException e) {
+            System.out.println("The BoundStatement is not ready.");
         }
+        System.out.println("insert done.");
     }
 
 }
