@@ -1,12 +1,7 @@
 package de.hska.bdelab;
 
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.management.Query;
 
 import org.slf4j.LoggerFactory;
 
@@ -14,21 +9,22 @@ import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Host;
 import com.datastax.driver.core.Metadata;
 import com.datastax.driver.core.PreparedStatement;
+import com.datastax.driver.core.ResultSet;
+import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.exceptions.NoHostAvailableException;
 import com.datastax.driver.core.exceptions.QueryExecutionException;
 
 public class CassandraHelper {
-    private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(CassandraHelper.class);
+	private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(CassandraHelper.class);
+	
     private Cluster cluster;
     private Session session;
     
     private final String keyspace = "pageviewkeyspace";
-    private final String tablename = "pageviewtable";
     private final String node = "10.10.33.44";
     
-    private PreparedStatement preparedSelect;
-    private String insertQuery = "SELECT url, calls FROM" + this.keyspace + "." + this.tablename + " WHERE time > ? AND time < ?";
+    private PreparedStatement prepStatement;
 
     public Session getSession()  {
         LOG.info("Starting getSession()");
@@ -52,39 +48,32 @@ public class CassandraHelper {
             System.out.printf("Datatacenter: %s; Host: %s; Rack: %s\n", host.getDatacenter(), host.getAddress(), host.getRack());
         }
         
-        this.session = cluster.connect();
-        
-        checkSetup();
-        
+        this.session = cluster.connect();        
     }
 
     public void closeConnection() {
         cluster.close();
     }
-    
-    private void checkSetup() {
-    	// check for existing keyspace (and create if not)
-    	String keyspaceQuery = "CREATE KEYSPACE IF NOT EXISTS ? WITH REPLICATION = { 'class' : 'NetworkTopologyStrategy', 'datacenter1' : 3 };";
-    	PreparedStatement ps = this.session.prepare(keyspaceQuery);
-    	this.session.execute(ps.bind(this.keyspace));
-    	
-    	//check for existing table (and create if not)
-    	String tableQuery = "CREATE TABLE IF NOT EXISTS ? (date text PRIMARY KEY, url text, calls int);";
-    	ps = this.session.prepare(tableQuery);
-    	this.session.execute(ps.bind(this.tablename));
-    }
-    
-    private void prepareQueries () {
-    	this.preparedSelect = this.session.prepare(insertQuery);
-    }
 
-    public List<Pair> lookupQuery(String start, String end) {
+
+    public List<Row> lookupQuery(String[] args) {
+    	String date = args[0];
+    	int startTime = Integer.parseInt(args[1]);
+    	int endTime = Integer.parseInt(args[2]);
+    	String tablename = "t" + date;
+    	
         Session session = this.getSession();
-                
-        try {
-        	// submit new data, will overwrite old entries (if any)
-            session.execute(this.preparedSelect.bind(start, end));
-            //session.executeAsync(this.preparedStatement.bind(key));
+            	
+    	String selectQuery = "SELECT url, calls"
+    						+ " FROM " + this.keyspace + "." + tablename 
+    						+ " WHERE time >= ?"
+    						+ " AND time <= ?"
+    						+ " ALLOW FILTERING";
+        this.prepStatement = this.session.prepare(selectQuery);
+
+        try {            	
+        	ResultSet rs = session.execute(this.prepStatement.bind(startTime, endTime));
+        	return rs.all();
         } catch (NoHostAvailableException e) {
             System.out.printf("No host in the %s cluster can be contacted to execute the query.\n", 
                     session.getCluster());
@@ -95,12 +84,12 @@ public class CassandraHelper {
             }
 
         } catch (QueryExecutionException e) {
-            System.out.println("An exception was thrown by Cassandra because it cannot " +
-                    "success<fully execute the query with the specified consistency level.");
+            System.out.println("An exception was thrown by Cassandra because it cannot successfully execute the query with the specified consistency level.");
         }  catch (IllegalStateException e) {
             System.out.println("The BoundStatement is not ready.");
         }
         
-        return new ArrayList<Pair>();
+        return new ArrayList<Row>();
     }
+
 }
