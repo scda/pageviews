@@ -52,7 +52,7 @@ public class PageviewsWriterApp {
       }
       result.set(sum);
       context.write(key, result);
-      dbClient.addKey(key.toString(), sum);
+      dbClient.insertPair(key.toString(), sum);
     }
     
     //Closes the Cassandra connection after the mapper is done

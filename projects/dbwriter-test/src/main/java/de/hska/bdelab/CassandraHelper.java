@@ -1,20 +1,18 @@
 package de.hska.bdelab;
 
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Date;
 
 import org.slf4j.LoggerFactory;
 
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Host;
-import com.datastax.driver.core.LocalDate;
 import com.datastax.driver.core.Metadata;
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.exceptions.NoHostAvailableException;
 import com.datastax.driver.core.exceptions.QueryExecutionException;
+import com.datastax.driver.extras.codecs.jdk8.InstantCodec;
 
 public class CassandraHelper {
 
@@ -23,11 +21,9 @@ public class CassandraHelper {
     private Session session;
     
     private final String keyspace = "pageviewkeyspace";
-    private final String tablename = "pageviewtable";
     private final String node = "10.10.33.44";
     
     private PreparedStatement preparedInsert;
-    private String insertQuery = "INSERT INTO " + this.keyspace + "." + this.tablename + " (time, url, calls) VALUES(?,?,?)";
 
     public Session getSession()  {
         LOG.info("Starting getSession()");
@@ -52,9 +48,8 @@ public class CassandraHelper {
         }
         
         this.session = cluster.connect();
-        
         checkSetup();
-        this.preparedInsert = this.session.prepare(insertQuery);
+        
     }
 
     public void closeConnection() {
@@ -62,30 +57,33 @@ public class CassandraHelper {
     }
     
     private void checkSetup() {
-    	// check for existing keyspace (and create if not)
     	String keyspaceQuery = "CREATE KEYSPACE IF NOT EXISTS " + this.keyspace + " WITH REPLICATION = { 'class' : 'NetworkTopologyStrategy', 'datacenter1' : 3 };";
     	PreparedStatement ps = this.session.prepare(keyspaceQuery);
     	this.session.execute(ps.bind());
-    	System.out.println("created keyspace.");
     	
-    	//check for existing table (and create if not)
-    	String tableQuery = "CREATE TABLE IF NOT EXISTS " + this.keyspace + "." + this.tablename + " (time timestamp PRIMARY KEY, url text, calls int);";
-    	ps = this.session.prepare(tableQuery);
-    	this.session.execute(ps.bind());
-    	System.out.println("created table.");
+    	this.cluster.getConfiguration().getCodecRegistry().register(InstantCodec.instance);
     }
 
 
-    public void addKey(String url, int number) {
+    public void insertPair(String url, int number) {
         Session session = this.getSession();
+        String tablename = "t" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
         
+    	String tableQuery = "CREATE TABLE IF NOT EXISTS " + this.keyspace + "." + tablename + " (time int, url text, calls int, PRIMARY KEY(time, url));";
+    	PreparedStatement ps = this.session.prepare(tableQuery);
+    	this.session.executeAsync(ps.bind());
+    	
+    	String insertQuery = "INSERT INTO " + this.keyspace + "." + tablename + " (time, url, calls) VALUES(?,?,?)";
+        this.preparedInsert = this.session.prepare(insertQuery);
+        
+        // get valid timestamp: Instant.parse(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:00:00'Z'"))),
         if(url.length()>0) {
             try {            	
             	// submit new data, will overwrite old entries (if any)
-            	System.out.println("datetime is:  " + new Date().getTime());
-                session.execute(this.preparedInsert.bind(new Date().getTime(), url, number));
-                // session.execute(this.preparedInsert.bind(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH"))+":00", url, number));
-                /*session.executeAsync(this.preparedStatement.bind(key));*/
+            	session.executeAsync(this.preparedInsert.bind(
+            			LocalDateTime.now().getHour(),            	 
+            			url,
+            			number));
             } catch (NoHostAvailableException e) {
                 System.out.printf("No host in the %s cluster can be contacted to execute the query.\n", 
                         session.getCluster());

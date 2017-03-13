@@ -7,7 +7,7 @@ public class PageviewsWriterApp {
 
   public static void main(String[] args) {
 	  dbClient.createConnection(); 
-	  dbClient.addKey(args[0], Integer.parseInt(args[1]));
+	  dbClient.insertPair(args[0], Integer.parseInt(args[1]));
 	  dbClient.closeConnection();
   }
 }
