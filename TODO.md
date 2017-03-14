@@ -1,7 +1,20 @@
 # TODO #
 ## up next ##
+* hadoop
+  * add "install maven" to init.pp
+  * replace Pagviews.java with mapreduce project
+    * pull file
+    * unpack file
+    * exec "mvn package"
+    * move to /opt/hadoop-2.7.3/jobs/pageviewsJob.jar 
+  * add hdfs-to-cassandra projet
+    * pull file
+    * unpack file
+    * exec "mvn package"
+    * add to run-batch after map-reduce file
+  
+  
 
-# HINWEISE #
 * STORM 
     * install maven, git, ruby, python, nodejs
     * install java-8 and set it as $JAVA_HOME   ->    export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
@@ -24,27 +37,6 @@
   https://storm.apache.org/releases/current/Setting-up-development-environment.html
   https://storm.apache.org/releases/current/Creating-a-new-Storm-project.html
 
-* hadoop
-  * make flume (re)connect to kafka (even if it didn't work during startup ...)
-  * output to Cassandra (outputs überschreiben oder neu strukturieren)
-  * TODO: rm old hdfs://outputdir entfernen, wenn direkt nach cassandra schreibt etc
-
-  <!-- 
-  https://www.packtpub.com/books/content/writing-cassandra-hdfs-using-hadoop-map-reduce-job
-
-  # CASSANDRA MAPREDUCE  
-    > maven install on mapreduce job
-    > cp *.jar to hdp_node
-    > bin/hadoop jar hdfsreader-0.0.1-SNAPSHOT-jar-with-dependencies.jar de.hska.bdelab.Pageviews /input/00test /output/00test
-  -->
-
-  
-* READER
-  * Anleitung in README anpassen (mvn package && java -jar /target/**.jar) zum starten, statt mvn exec:java
-  * URL und Uhrzeit als Parameter (VON BIS !!!) > eventuell Cassandras Struktur anpassen
-  * Ausgabe beide Seiten getrennt (führen atm die selbe Verarbeitung durch)
-  * dashboard? dashing.io
-
 * maven
   * alle projekte zusammenfassen in einer "parent pom"
 
@@ -53,4 +45,4 @@
   * remove tar.gz files etc. from puppet directories
   * remove "local test" sections from init.pp's and activate "real downloads"
   
-* TEST TEST TEST :)
+* TEST TEST TEST :) (mit echten und finalen files etc.)
