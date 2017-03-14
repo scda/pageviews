@@ -45,7 +45,7 @@ public class Generator
     props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
     props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
 
-    Producer<String, String> producer = new KafkaProducer(props);
+    Producer<String, String> producer = new KafkaProducer<String, String>(props);
 
     try {
     	for(;;) {
