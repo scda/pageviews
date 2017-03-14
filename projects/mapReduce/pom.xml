@@ -3,20 +3,21 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>de.hska.bdelab</groupId>
-    <artifactId>dbwriter-test</artifactId>
+    <artifactId>pageviews-mapreduce</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <packaging>jar</packaging>
 
-    <name>dbwriter-test</name>
+    <name>pageviews-mapreduce</name>
 
     <build>
         <plugins>
         	<plugin>
 			  <artifactId>maven-assembly-plugin</artifactId>
 			  <configuration>
+			  	<finalName>pageviewsMapReduceJob</finalName>
 			    <archive>
 			      <manifest>
-			        <mainClass>de.hska.bdelab.PageviewsWriterApp</mainClass>
+			        <mainClass>de.hska.bdelab.PageviewsMapReduceApp</mainClass>
 			      </manifest>
 			    </archive>
 			    <descriptorRefs>
@@ -41,21 +42,26 @@
     </properties>
     <dependencies>
         <dependency>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-hdfs</artifactId>
+            <version>2.7.3</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-common</artifactId>
+            <version>2.7.3</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-core</artifactId>
+            <version>1.2.1</version>
+        </dependency>
+        <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>4.10</version>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>com.datastax.cassandra</groupId>
-            <artifactId>cassandra-driver-core</artifactId>
-            <version>3.1.4</version>
-        </dependency>
-        <dependency>
-		  <groupId>com.datastax.cassandra</groupId>
-		  <artifactId>cassandra-driver-extras</artifactId>
-		  <version>3.1.4</version>
-		</dependency>
         <dependency>
             <groupId>org.xerial.snappy</groupId>
             <artifactId>snappy-java</artifactId>
