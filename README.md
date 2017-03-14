@@ -44,7 +44,7 @@ $ mvn exec:java
 Change into the *reader* directory and run it 
 ```bash
 $ mvn package
-$ mvn exec:java
+$ java -jar target/dbwriter-test-*-jar-with-dependencies.jar ${DATE} ${START-TIME} ${END-TIME}
 ```
 
 
@@ -522,34 +522,52 @@ Cassandra is being written to from both the batch processing node and the stream
 Cassandra can be manually edited (among other ways) by using the cqlsh tool provided by the cassandra installation. The language matches other typical database query languages.
 ```cql
 $ bin/cqlsh 10.10.33.44
-> CREATE KEYSPACE pageviewkeyspace WITH REPLICATION = { 'class' : 'NetworkTopologyStrategy', 'datacenter1' : 3 };
-> USE pageviewkeyspace;
-> CREATE TABLE pageviewtable (date text PRIMARY KEY, url text, calls int);
-> select * from pageviewtable;
+> CREATE KEYSPACE IF NOT EXISTS pageviewkeyspace WITH REPLICATION = { 'class' : 'NetworkTopologyStrategy', 'datacenter1' : 3 };
+> CREATE TABLE IF NOT EXISTS pageviewkeyspace.pageviewtable (time int, url text, calls int, PRIMARY KEY(time, url));
+> select * from pageviewkeyspace.pageviewtable;
 ```
+
 
 The keyspaces, tables, rows, columns etc. can be queried, edited and deleted as commonly known from other database software. To insert entries into a database (using the structures given above) with an optional "USING &lt;Option&gt;" appended:
 ```cql
 $ bin/cqlsh 10.10.33.44
-> INSERT INTO pageviewkeyspace.pageviewtable (date, url, calls) VALUES('09-03-07_10:07', 'http://bdelab.hska.de/pageviewtest', 5);
+> INSERT INTO pageviewkeyspace.pageviewtable (time, url, calls) VALUES(12, 'http://bdelab.hska.de/pageviews', 2000); 
 ```
+The full documentation of the latest version of CQL can be found in [the CQL reference](https://cassandra.apache.org/doc/latest/cql/index.html).
 
 You can check on the cassandra process with the usual system tools and additionally use the nodetool for various commands:
 ```bash
 $ bin/nodetool status
 ```
 
-## Reader ##
-The reader is again a Java application like the generator. It can be run via some IDE like IntelliJ or Eclipse, but can also be started easily via Maven on the command line. It uses the Datastax API to connect to and read from the Cassandra Database. It reads the outputs on the two keyspaces that contain the outputs of the stream and batch processing.
+The structure of this Cassandra database will be set up as follows: Within the one keyspace *pageviewkeyspace* there are multiple tables. Per calendar day that data is written to it, one table will be created with the name *t${DATE}* (e.g. *t20170328*). Within that table there are multiple columns, namely *time, url, calls*. *time* is an integer between 0 and 23 indicating the hour of the day. *url* is a string of the url that has been called. *calls* is an integer indicating the number of calls that have happened on the respective *url*. *time* and *url* form the Primary Key together, where *time* is the partition key and *url* is a clustering column (see the CQL documentation link above). If a new set of data is written to the table containing the same *time* and *url* values as one of the existing entries, the existing entry will be updated to match the new entry. Therefore no duplication will occur.
 
-Both the Reader and the Hadoop Node access Cassandra via the Datastax API which delivers a very straightforward abstraction. It obviously needs to be provided with the essential information for the connection:
-```java
+## Reader ##
+The reader is again a Java application like the generator. It can be run via some IDE like IntelliJ or Eclipse, but can also be easily packaged via Maven and run on the command line. It uses the Datastax API to connect to and read from the Cassandra Database. It reads the outputs on the tables that contain the outputs of the stream and batch processing respective to the given input parameters.
+
+As mentioned before the application can be run from the command line. When working from inside the project's home directory the following commands will start it:
+```bash
+$ mvn package
+$ java -jar target/dbreader-*-jar-with-dependencies.jar ${DATE} ${STARTTIME} ${ENDTIME}
+```
+The date has to be provided as string in the format *yyyymmdd* while start- and end-time have to be provided as full hours in the format *HH*. To give an example, the parameters could look like this: *20170328 10 16* which will request a list of the pageviews registered at the *28th of March 2017* within the timeframe between *10:00* and *16:59*.
+
+Both the Reader and the Hadoop Node access Cassandra via the Datastax API for which a dependency is set in the maven project:
+```xml
+<dependency>
+  <groupId>com.datastax.cassandra</groupId>
+  <artifactId>cassandra-driver-core</artifactId>
+  <version>3.1.4</version>
+</dependency>
+```
+
+This driver delivers a very straight forward level of abstraction. It obviously needs to be provided with the essential information for the connection:
+```java 
 private final String keyspace = "pageviewkeyspace";
-private final String table = "pageviewtable";
 private final String node = "10.10.33.44";
 ```
 
-After that a few simple and self-explaining functions perform all of the work for the user:
+After that the essence of the reading process are a few simple and self-explaining functions that perform most of the work for the user:
 ```java
 private Cluster cluster = Cluster.builder().addContactPoint(node).build();;
 private Session session = cluster.connect();
@@ -558,8 +576,9 @@ session.execute(query);
 
 cluster.close();
 ```
+The documentation for all available functions can be found in [the Datastax Java Driver reference ](http://docs.datastax.com/en/developer/java-driver/3.1/).
 
-The query can be any query in CQL like:
+The query can be any query in correct CQL (Cassandra Query Language) like:
 ```cql
-INSERT INTO pageviewkeyspace.pageviewtable (date, url, calls) VALUES('17-03-01_13:37', 'http://bdelab.hska.de/batch', 100);
+INSERT INTO exampleKeyspace.exampleTable (rowOneText, rowTwoText, rowThreeInt) VALUES('someValueString', 'someOtherValueString', 1001);
 ```
