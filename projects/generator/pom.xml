@@ -3,11 +3,11 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>de.hska.bdelab</groupId>
-  <artifactId>generator</artifactId>
+  <artifactId>pageviews-generator</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <packaging>jar</packaging>
 
-  <name>generator</name>
+  <name>pageviews-generator</name>
   <url>http://maven.apache.org</url>
 
   <properties>
@@ -18,9 +18,10 @@
         	<plugin>
 			  <artifactId>maven-assembly-plugin</artifactId>
 			  <configuration>
+			  	<finalName>pv-generator</finalName>
 			    <archive>
 			      <manifest>
-			        <mainClass>de.hska.bdelab.GeneratorApp</mainClass>
+			        <mainClass>de.hska.bdelab.PageviewsGeneratorApp</mainClass>
 			      </manifest>
 			    </archive>
 			    <descriptorRefs>
@@ -47,7 +48,6 @@
       <version>3.8.1</version>
       <scope>test</scope>
     </dependency>
-    
     <dependency>
 	    <groupId>org.apache.kafka</groupId>
 	    <artifactId>kafka-clients</artifactId>
