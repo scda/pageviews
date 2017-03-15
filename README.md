@@ -424,6 +424,18 @@ $ bin/hadoop fs -cat /output/.../part-r-00000
 
 *Sidenote: If the specified input directory DOES NOT exist or the output directory DOES already exist the job will fail.*
 
+## HDFS to Cassandra ##
+At first I made the MapReduce job directly write to Cassandra, which proved to be highly inperformant and probabl somewhat besides the point of a MapReduce job. Therefore now a second application will be run as part of the batch-process after the MapReduce job is finished. This application will read from HDFS and write to Cassandra. It uses the Datastax Java Driver for Cassandra and the Java API for Hadoops HDFS. 
+
+The details of the part of reading from and writing to Cassandra can be found within the chapter *Cassandra* within *Output*.
+
+In order to read from HDFS a Stream to a DistributedFileSystem has to be established from which the data can then be extracted:
+```java
+DistributedFileSystem dfs = new DistributedFileSystem();
+dfs.initialize(new URI("hdfs://10.10.33.11:9000"), new Configuration());
+FSDataInputStream streamReader = dfs.open(path);
+```
+
 
 # **STREAM PROCESSING** #
 On the stream processing node only Apache Storm is running.
@@ -540,7 +552,7 @@ You can check on the cassandra process with the usual system tools and additiona
 $ bin/nodetool status
 ```
 
-The structure of this Cassandra database will be set up as follows: Within the one keyspace *pageviewkeyspace* there are multiple tables. Per calendar day that data is written to it, one table will be created with the name *t${DATE}* (e.g. *t20170328*). Within that table there are multiple columns, namely *time, url, calls*. *time* is an integer between 0 and 23 indicating the hour of the day. *url* is a string of the url that has been called. *calls* is an integer indicating the number of calls that have happened on the respective *url*. *time* and *url* form the Primary Key together, where *time* is the partition key and *url* is a clustering column (see the CQL documentation link above). If a new set of data is written to the table containing the same *time* and *url* values as one of the existing entries, the existing entry will be updated to match the new entry. Therefore no duplication will occur.
+The structure of this Cassandra database will be set up as follows: Within the one keyspace *pageviewkeyspace* there are multiple tables. Per calendar day that data is written to it, one table will be created with the name *t${DATE}* (with the *date* in the format *yyyymmdd* e.g. *t20170328*). Within that table there are multiple columns, namely *time, url, calls*. *time* is an integer between 0 and 23 indicating the hour of the day. *url* is a string of the url that has been called. *calls* is an integer indicating the number of calls that have happened on the respective *url*. *time* and *url* form the Primary Key together, where *time* is the partition key and *url* is a clustering column (see the CQL documentation link above). If a new set of data is written to the table containing the same *time* and *url* values as one of the existing entries, the existing entry will be updated to match the new entry. Therefore no duplication will occur.
 
 ## Reader ##
 The reader is again a Java application like the generator. It can be run via some IDE like IntelliJ or Eclipse, but can also be easily packaged via Maven and run on the command line. It uses the Datastax API to connect to and read from the Cassandra Database. It reads the outputs on the tables that contain the outputs of the stream and batch processing respective to the given input parameters.

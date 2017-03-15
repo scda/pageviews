@@ -1,21 +1,10 @@
 # TODO #
-## up next ##
-* hadoop
-  * add "install maven" to init.pp
-  * replace Pagviews.java with mapreduce project
-    * pull file
-    * unpack file
-    * exec "mvn package"
-    * move to /opt/hadoop-2.7.3/jobs/pageviewsJob.jar 
-  * add hdfs-to-cassandra projet
-    * pull file
-    * unpack file
-    * exec "mvn package"
-    * add to run-batch after map-reduce file
-  
-  
 
 * STORM 
+
+
+
+* ALTE ANMERKUNGEN
     * install maven, git, ruby, python, nodejs
     * install java-8 and set it as $JAVA_HOME   ->    export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
     * git clone
@@ -36,9 +25,8 @@
   https://storm.apache.org/releases/current/Tutorial.html
   https://storm.apache.org/releases/current/Setting-up-development-environment.html
   https://storm.apache.org/releases/current/Creating-a-new-Storm-project.html
-
-* maven
-  * alle projekte zusammenfassen in einer "parent pom"
+  
+* eine parent pom für alle projekte
 
 ## Letzte Schritte #
 * CLEANUP
