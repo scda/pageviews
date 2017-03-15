@@ -27,10 +27,15 @@ class storm {
 	  require => Exec["apt-get update"]
 	}  
   
+  package { "maven":
+    ensure => present,
+    require => Exec["apt-get update"]
+  }
+  
   exec { "package_finish" :
     command => "echo 0",
     path => $path,
-    require => [ Package["openjdk-8-jdk"] ]
+    require => [ Package["openjdk-8-jdk"], Package["maven"] ]
   }
   
   ## BEGIN local test
