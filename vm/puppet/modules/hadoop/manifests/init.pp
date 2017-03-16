@@ -11,6 +11,12 @@ class hadoop {
     ensure => present,
     require => Exec["apt-get update"]
   }
+  
+  exec { "package_finish" :
+    command => "echo 0",
+    path => $path,
+    require => [ Package["openjdk-7-jdk"], Package["maven"] ]
+  }
 
   ## BEGIN local test
   file { "/tmp/hadoop.tar.gz":
