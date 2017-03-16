@@ -26,6 +26,12 @@ Version used during development: 4.8.2
 [maven.apache.org](https://maven.apache.org/)  
 Version used during development: 3.3.9
 
+**Ruby**
+[ruby-lang.org]https://www.ruby-lang.org/)
+Version used during development: 2.4.0
+*- only needed for the dashboard -*
+
+
 ## Go! ##
 ### VMs ###
 Change into the *vm* directory containing the *Vagrantfile* and start all the virtual machines 
@@ -34,6 +40,8 @@ $ vagrant up
 ```
 
 ### Generator ###
+This application will produce somewhat random inputs for the batch and stream processing. 
+
 Change into the *generator* directory and run it 
 ```bash
 $ mvn package
@@ -41,11 +49,37 @@ $ mvn exec:java
 ```
 
 ### Reader ###
-Change into the *reader* directory and run it 
+This application will give you the output from the batch processing. 
+
+Change into the *dbreader* directory and run it 
 ```bash
 $ mvn package
-$ java -jar target/dbwriter-test-*-jar-with-dependencies.jar ${DATE} ${START-TIME} ${END-TIME}
+$ java -jar target/dbreader-*-jar-with-dependencies.jar ${DATE} ${START-TIME} ${END-TIME}
 ```
+
+### Dashboard ###
+This application will give you the output from the stream processing.
+
+Preparations:
+```bash
+$ gem install dashing
+$ gem install bundler
+```
+You will probably need to add the installation directory of the ruby gems to your *PATH*.
+```bash
+$ gem environment
+$ export PATH=$PATH:{PATH OF THE "USER INSTALLATION DIRECTORY" GIVEN BY THE LAST COMMAND}
+```
+
+Change into the *dashboard* directory and run it 
+```bash
+$ bundle
+$ dashing start
+```
+
+You can now open [localhost:3030](localhost:3030) in your browser and should see a dashboard. The data inside the dashboard will only appear, when the stream application has processed its first datasets.
+
+
 
 
 # VIRTUAL ENVIRONMENT #
@@ -493,20 +527,46 @@ In Java a *TopologyBuilder* is used and provided with Bolts and Spouts:
 ```java
 TopologyBuilder builder = new TopologyBuilder();
 
-builder.setSpout("spout", new SomeInputSpout(), 3);
-builder.setBolt("split", new SplitSentence(), 5).shuffleGrouping("spout");
-builder.setBolt("count", new WordCount(), 8).fieldsGrouping("split", new Fields("word"));
-```
+topology.setSpout("pvKafkaSpout",new KafkaSpout());
+topology.setBolt("pvSplitBolt",new SplitBolt()).shuffleGrouping("pvKafkaSpout");
+topology.setBolt("pvCountBolt",new CountBolt()).shuffleGrouping("pvSplitBolt");
 
-The Topology classes usually extend some form of existing Topologies like the *ConfigurableTopology*. The very same goes for the Bolts and Spouts. The output data is declared within each new class.
-```java
-@Override
-public void declareOutputFields(OutputFieldsDeclarer declarer) {
-  declarer.declare(new Fields("word", "count"));
-}
+cluster.submitTopology("pageviewsTopology", conf, topology.createTopology());  
 ```
 
 Before submitting a Topology to the configured Nimbus the number of workers to be assigned can be specified.
+
+The Topology classes usually extend some base classes. The very same goes for the Bolts and Spouts. 
+
+The Spout in this project extends *BaseRichSpout*. It outputs its data to a *SpoutOutputCollector*. The *open()* function is used for preparations (in this case a connection to the Kafka stream) and called when a task for this component is initialized within a worker on the cluster. It provides information about the environment to the Spout. For the usage of the Kafka stream, the server address and the name of the topics *("output")* have to be provided. The offset in the queue that indicates which messages have already been received by this client will be managed automatically.
+```java
+  props.put("bootstrap.servers", "10.10.33.22:9092");
+  props.put("enable.auto.commit", "true");
+
+  _consumer = new KafkaConsumer<String, String>(props);
+  _consumer.subscribe(Arrays.asList("output"));
+```
+
+The *nextTuple()* method is called when Storm is requesting the Spout to emit tuples to the output collector. What is important in this method (to this project) are the requests to the Kafka Stream. Reading single messages from the stream is overly complex and makes little sense. Therefore the Spout will hold a buffer of messages and emit single lines to the Collector per function call. As soon as this buffer is empty, a poll on the Kafka topic is executed. 
+```java
+if (_records.isEmpty()) { 
+	poll(); 
+}
+
+submit = _records.remove();
+
+_collector.emit(new Values(submit));
+```
+
+The Bolt has similarly a preparing function *prepare()* and a regularly automatically called method *execute()*. The pageviews Topology uses a first Bolt that performs a format on the input strings (basically a string-split) to extract the urls from the input lines. The second Bolt counts the incoming urls and output the results to the dashboard. For further information on the updates of the dashboard, see the Chapter *Output* inside the section *Dashboard*. The data from the stream processing is currently not being persisted anywhere else.
+
+The output data for the collectors has to be individually declared within each class - e.g.: 
+```java
+@Override
+public void declareOutputFields(OutputFieldsDeclarer declarer) {
+  declarer.declare(new Fields("url", "count"));
+}
+```
 
 
 
@@ -555,7 +615,7 @@ $ bin/nodetool status
 The structure of this Cassandra database will be set up as follows: Within the one keyspace *pageviewkeyspace* there are multiple tables. Per calendar day that data is written to it, one table will be created with the name *t${DATE}* (with the *date* in the format *yyyymmdd* e.g. *t20170328*). Within that table there are multiple columns, namely *time, url, calls*. *time* is an integer between 0 and 23 indicating the hour of the day. *url* is a string of the url that has been called. *calls* is an integer indicating the number of calls that have happened on the respective *url*. *time* and *url* form the Primary Key together, where *time* is the partition key and *url* is a clustering column (see the CQL documentation link above). If a new set of data is written to the table containing the same *time* and *url* values as one of the existing entries, the existing entry will be updated to match the new entry. Therefore no duplication will occur.
 
 ## Reader ##
-The reader is again a Java application like the generator. It can be run via some IDE like IntelliJ or Eclipse, but can also be easily packaged via Maven and run on the command line. It uses the Datastax API to connect to and read from the Cassandra Database. It reads the outputs on the tables that contain the outputs of the stream and batch processing respective to the given input parameters.
+The reader is again a Java application like the generator. It can be run via some IDE like IntelliJ or Eclipse, but can also be easily packaged via Maven and run on the command line. It uses the Datastax API to connect to and read from the Cassandra Database. It reads the outputs on the tables that contain the outputs of the batch processing respective to the given input parameters.
 
 As mentioned before the application can be run from the command line. When working from inside the project's home directory the following commands will start it:
 ```bash
@@ -594,3 +654,31 @@ The query can be any query in correct CQL (Cassandra Query Language) like:
 ```cql
 INSERT INTO exampleKeyspace.exampleTable (rowOneText, rowTwoText, rowThreeInt) VALUES('someValueString', 'someOtherValueString', 1001);
 ```
+
+## Dashboard ##
+To display the output of the stream processing in a somewhat direct and timely manner, a dashboard based on [dashing.io](http://dashing.io) is used. The installation process is explained in the *Quickstart* section.
+
+The dashboard is updated via HTTP-POSTs sent from the Topology running on Storm. A manual update to the dashboard can be sent via:
+```bash
+$ curl -d '{ "auth_token": "pageviewskey", "items":[ {"label":"testentry2","value":"5"}] }' \http://localhost:3030/widgets/pageviews
+```
+
+The Storm topology uses apaches HTTP components for this:
+```xml
+<dependency>
+  <groupId>org.apache.httpcomponents</groupId>
+  <artifactId>httpclient</artifactId>
+  <version>4.5.3</version>
+</dependency>
+```
+
+```java
+_httpClient = HttpClients.createDefault();
+_widgetPost = new HttpPost("http://10.0.2.2:3030/widgets/pageviews");
+
+_widgetPost.setEntity(new StringEntity(postString));
+_httpClient.execute(_widgetPost);	
+```
+The *postString* is a JSON-formated dataload that corresponds to the data in the curl-POST from the example given above. The address *10.0.2.2* given here is the default gateway that is set for any virtual machine and therefore the address that leads from the guest-machine to the host-machine (where the dashboard is running).
+
+The dashboard should be always up to date, since the topology will update it whenever it changes the count to any of the gathered urls.
