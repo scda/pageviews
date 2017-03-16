@@ -2,6 +2,7 @@ package de.hska.bdelab;
 
 import org.apache.storm.Config;
 import org.apache.storm.LocalCluster;
+import org.apache.storm.StormSubmitter;
 import org.apache.storm.topology.TopologyBuilder;
 
 public class PageviewsTopology {
@@ -14,9 +15,16 @@ public class PageviewsTopology {
       topology.setBolt("pvCountBolt",new CountBolt()).shuffleGrouping("pvSplitBolt");
       
       Config conf = new Config();
-      conf.setDebug(true);
+      // conf.setDebug(true);
 
-      LocalCluster cluster=new LocalCluster();
-      cluster.submitTopology("pageviewsTopology", conf, topology.createTopology());  
+      //LocalCluster cluster=new LocalCluster();
+      //cluster.submitTopology("pageviewsTopology", conf, topology.createTopology());  
+			
+      try {
+    	  StormSubmitter.submitTopology("pageviewsTopology", conf, topology.createTopology());
+      } catch (Exception ex) {
+    	  //ex.printStackTrace();
+      }
+      
   }
 }
