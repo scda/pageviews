@@ -1,35 +1,31 @@
-# TODO #
+# STORM #
+* Storm-Node init.pp
+  * install maven
+  * install java-8 and set it as $JAVA_HOME   ->    export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
+  * mvn package and move jar
 
-* STORM 
+  * input from kafka
+    * simply use the kafka client (as used before) instead of the storm xy-spout ?!
+      * > read only one line at a time
 
+  * output to DASHING.IO 
+    * Anleitung (setup auf dem host)
+      * install ruby 
+      * $ gem install dashing
+      * $ gem install bundler
+      * add to $PATH
+      * cd into dashing project
+      * $ bundle
+      * $ dashing start
+    * EXAMPLE command:
+      * curl -d '{ "auth_token": "pageviewskey", "items":[ {"label":"testentry2","value":"5"}] }' \http://localhost:3030/widgets/pageviews
+      * auf VM wird Adresse durch 10.0.2.2 ersetzt (gateway zu vm host)  
+# reader #
+  > zweites widget anlegen, das den output des batch processings anzeigt?
 
-
-* ALTE ANMERKUNGEN
-    * install maven, git, ruby, python, nodejs
-    * install java-8 and set it as $JAVA_HOME   ->    export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
-    * git clone
-    * "mvn clean install -DskipTests=true" from storm-top-level directory (package will fail otherwise with "cannot resolve dependencies")
-    * "mvn package" from $STORM$/examples/storm-starter
-    
-  https://storm.apache.org/releases/current/Running-topologies-on-a-production-cluster.html
-    * /opt/apache-storm-1.0.3/bin/storm jar /root/storm-master/examples/storm-starter/target/storm-starter-2.0.0-SNAPSHOT.jar org.apache.storm.starter.ExclamationTopology -local
-
-  INPUT FROM KAFKA
-  https://storm.apache.org/releases/1.0.3/storm-kafka.html > angegebene kafka version = 0.8.x 
-    * version 0.8 ... testen!
-
-* storm (stream processing)
-  * process
-  * read from kafka
-  * write to cassandra  https://endocode.com/blog/2015/04/08/building-a-stream-processing-pipeline-with-kafka-storm-and-cassandra-part-1-introducing-the-components/
-  https://storm.apache.org/releases/current/Tutorial.html
-  https://storm.apache.org/releases/current/Setting-up-development-environment.html
-  https://storm.apache.org/releases/current/Creating-a-new-Storm-project.html
-  
-* eine parent pom für alle projekte
-
-## Letzte Schritte #
+# FINALE #
 * CLEANUP
+  * eine parent pom für alle projekte?
   * remove tar.gz files etc. from puppet directories
   * remove "local test" sections from init.pp's and activate "real downloads"
   
