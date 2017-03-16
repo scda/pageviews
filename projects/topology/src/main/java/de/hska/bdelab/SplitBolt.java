@@ -21,13 +21,18 @@ public class SplitBolt extends BaseRichBolt {
 
 	@Override
 	public void execute(Tuple input) {
-		_collector.emit(input, new Values(input.getString(0) + "!!!"));
-		_collector.ack(input);
+		if (!input.getString(0).isEmpty()) {
+			String[] result = input.getString(0).split(",");
+	        if (result.length > 1) {
+	        	_collector.emit(input, new Values(result[1]));
+	    		_collector.ack(input);
+	        }
+		}
 	}
 
 	@Override
 	public void declareOutputFields(OutputFieldsDeclarer declarer) {
-		declarer.declare(new Fields("word"));		
+		declarer.declare(new Fields("url"));		
 	}
 	
 

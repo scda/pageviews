@@ -11,7 +11,8 @@ public class PageviewsTopology {
       
       topology.setSpout("pvKafkaSpout",new KafkaSpout());
       topology.setBolt("pvSplitBolt",new SplitBolt()).shuffleGrouping("pvKafkaSpout");
-
+      topology.setBolt("pvCountBolt",new CountBolt()).shuffleGrouping("pvSplitBolt");
+      
       Config conf = new Config();
       conf.setDebug(true);
 
