@@ -7,12 +7,12 @@ import org.apache.storm.topology.BasicOutputCollector;
 import org.apache.storm.topology.IBasicBolt;
 import org.apache.storm.topology.OutputFieldsDeclarer;
 import org.apache.storm.tuple.Tuple;
+import org.apache.storm.tuple.Fields;
 
-public class SampleBolt implements IBasicBolt {
+public class CountBolt implements IBasicBolt {
     @Override
     public void declareOutputFields(OutputFieldsDeclarer declarer) {
-        // TODO Auto-generated method stub
-
+    	declarer.declare(new Fields("word"));
     }
 
     @Override

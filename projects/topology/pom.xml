@@ -17,7 +17,7 @@
 			  	<finalName>pageviewsTopology</finalName>
 			    <archive>
 			      <manifest>
-			        <mainClass>de.hska.bdelab.PageviewsTopologyApp</mainClass>
+			        <mainClass>de.hska.bdelab.PageviewsTopology</mainClass>
 			      </manifest>
 			    </archive>
 			    <descriptorRefs>
@@ -47,5 +47,21 @@
 	      <version>1.0.3</version>
 	      <scope>provided</scope>
 	    </dependency>
+	    <dependency>
+            <groupId>org.apache.kafka</groupId>
+            <artifactId>kafka_2.10</artifactId>
+            <version>0.8.1.1</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.zookeeper</groupId>
+                    <artifactId>zookeeper</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>log4j</groupId>
+                    <artifactId>log4j</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+	    
     </dependencies>
 </project>
