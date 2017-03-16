@@ -14,14 +14,6 @@ class storm {
     require => Exec["insecuressh_finish"]
   }
   
-  /*
-  package { "openjdk-7-jdk" :
-	  ensure => present,
-	  require => Exec["apt-get update"],
-    before => Package["openjdk-8-jdk"]
-	} 
-  */ 
-  
   package { "openjdk-8-jdk" :
 	  ensure => present,
 	  require => Exec["apt-get update"]
@@ -36,6 +28,11 @@ class storm {
     command => "echo 0",
     path => $path,
     require => [ Package["openjdk-8-jdk"], Package["maven"] ]
+  }
+  
+  exec { "set_javahome":
+    command => "echo 'JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64' >> /etc/environment",
+    path => $path,
   }
   
   ## BEGIN local test
@@ -170,6 +167,41 @@ class storm {
     command => "start storm-ui",
     path => $path,
     require => [ File["/etc/init/storm-ui.conf"], File["${home_dir}/apache-storm-${storm_version}/conf/storm.yaml"], Exec["package_finish"] ]
+  }
+  
+  file { "/tmp/topology.tar.gz":
+    source => "puppet:///modules/storm/topology.tar.gz",
+    ensure => present,
+    owner => root,
+    group => root,
+    mode => 755
+  }
+  
+  exec {"unpack_topology":
+    command => "tar -zxf /tmp/topology.tar.gz -C ${home_dir}/",
+    path => $path,
+    require => File["/tmp/topology.tar.gz"]
+  }
+  
+  exec {"package_topology":
+    cwd => "${home_dir}/topology",
+    command => "mvn package",
+    path => $path,
+    require => [Exec["package_finish"], Exec["unpack_topology"]]
+  }
+  
+  file { "/etc/init/storm-topology.conf":
+    source => "puppet:///modules/storm/storm-topology.conf",
+    owner => root,
+    group => root,
+    mode => 755,
+    require => Exec["package_topology"]
+  }
+  
+  exec { "start-storm-topology" :
+    command => "start storm-topology",
+    path => $path,
+    require => [ File["/etc/init/storm-topology.conf"], Exec["package_finish"] ]
   }
   
 }
