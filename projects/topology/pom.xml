@@ -47,7 +47,7 @@
 			<version>1.0.3</version>
 			<scope>provided</scope>
 		</dependency>
-		<dependency>
+		<!-- <dependency>
 			<groupId>org.apache.kafka</groupId>
 			<artifactId>kafka_2.10</artifactId>
 			<version>0.8.1.1</version>
@@ -61,11 +61,16 @@
 					<artifactId>log4j</artifactId>
 				</exclusion>
 			</exclusions>
-		</dependency>
+		</dependency>-->
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpclient</artifactId>
 			<version>4.5.3</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.kafka</groupId>
+			<artifactId>kafka-clients</artifactId>
+			<version>0.9.0.0</version>
 		</dependency>
 	</dependencies>
 </project>

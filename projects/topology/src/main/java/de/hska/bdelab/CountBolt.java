@@ -19,23 +19,25 @@ import org.apache.http.impl.client.HttpClients;
 public class CountBolt extends BaseRichBolt{
 	private static final long serialVersionUID = 4542793265656293782L;
 	OutputCollector _collector;
-	Map<String, Integer> counts = new HashMap<String, Integer>();
-	CloseableHttpClient _httpClient;
+	Map<String, Integer> _counts = new HashMap<String, Integer>();
 	
-	HttpPost widgetPost = new HttpPost("http://10.0.2.2:3030/widgets/pageviews");	
+	CloseableHttpClient _httpClient;
+	HttpPost _widgetPost;
+	
 	@Override
 	public void prepare(Map stormConf, TopologyContext context, OutputCollector collector) {
 		_collector = collector;
 		_httpClient = HttpClients.createDefault();
+		_widgetPost = new HttpPost("http://10.0.2.2:3030/widgets/pageviews");
 	}
 
 	@Override
 	public void execute(Tuple input) {
 		String url = input.getString(0);
-		Integer count = counts.get(url);
+		Integer count = _counts.get(url);
 		if (count == null) { count = 0; }
 		count++;
-		counts.put(url, count);
+		_counts.put(url, count);
 		_collector.emit(new Values(url, count));
 		
 		updateDash();
@@ -43,15 +45,15 @@ public class CountBolt extends BaseRichBolt{
 	
 	private void updateDash() {
 		String postString = new String("{\"auth_token\": \"pageviewskey\", \"items\":[");
-		for (Map.Entry<String, Integer> entry : counts.entrySet()) {
+		for (Map.Entry<String, Integer> entry : _counts.entrySet()) {
 			postString += "{\"label\":\"" + entry.getKey() + "\", \"value\":\"" + entry.getValue().toString() + "\"},";
 		}
 		postString = postString.substring(0, postString.length()-1) + "]}";
 		
 
 		try {
-			widgetPost.setEntity(new StringEntity(postString));
-			_httpClient.execute(widgetPost);	
+			_widgetPost.setEntity(new StringEntity(postString));
+			_httpClient.execute(_widgetPost);	
 		} catch(Exception ex) {
 			/*System.out.println("send failed.");
 			ex.printStackTrace();*/
