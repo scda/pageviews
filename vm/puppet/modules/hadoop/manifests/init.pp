@@ -2,9 +2,20 @@ class hadoop {
   $hadoop_home = "/opt/hadoop"
   $hadoop_version = "2.7.3"
 
-  package { "openjdk-7-jdk":
+  exec { "jdk8-ppa" :
+		command => 'add-apt-repository ppa:openjdk-r/ppa',
+		path => $path,
+		before => Exec["apt-get update"]
+	}
+  
+  exec { "apt-get update" :
+    command => "/usr/bin/apt-get update";
+  }
+
+  package { "openjdk-8-jdk":
 	  ensure => present,
-	  require => Exec["apt-get update"]
+	  require => Exec["apt-get update"],
+    before => Package["maven"]
 	}
   
   package { "maven":
@@ -15,7 +26,7 @@ class hadoop {
   exec { "package_finish" :
     command => "echo 0",
     path => $path,
-    require => [ Package["openjdk-7-jdk"], Package["maven"] ]
+    require => [ Package["openjdk-8-jdk"], Package["maven"] ]
   }
 
   ## BEGIN local test
@@ -98,7 +109,7 @@ class hadoop {
     command => "${hadoop_home}-${hadoop_version}/bin/hdfs namenode -format",
     path => $path,
     timeout => 30,
-    require => Exec["unpack_hadoop"],
+    require => [ Exec["unpack_hadoop"], Exec["package_finish"]],
     before => Exec["start_hdpdaemons"]
   }
 
@@ -165,11 +176,11 @@ class hadoop {
   exec { "compile_job" :
     cwd => "${hadoop_home}-${hadoop_version}/jobs",
     command => "${hadoop_home}-${hadoop_version}/bin/hadoop com.sun.tools.javac.Main PageViews.java",
-    environment => [ "JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64",  "HADOOP_CLASSPATH=/usr/lib/jvm/java-7-openjdk-amd64/lib/tools.jar",
+    environment => [ "JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64",  "HADOOP_CLASSPATH=/usr/lib/jvm/java-8-openjdk-amd64/lib/tools.jar",
     "HADOOP_HOME=/opt/hadoop-2.7.3" ],
     path => $path,
     user => "root",
-    require => [ File["${hadoop_home}-${hadoop_version}/PageViews.java"], File["${hadoop_home}-${hadoop_version}/etc/hadoop/hadoop-env.sh"], Exec["start_hdpdaemons"] ]
+    require => [ File["${hadoop_home}-${hadoop_version}/jobs/PageViews.java"], File["${hadoop_home}-${hadoop_version}/etc/hadoop/hadoop-env.sh"], Exec["start_hdpdaemons"] ]
   }
 
   exec { "pack_job" :
@@ -191,17 +202,24 @@ class hadoop {
     require => File["/tmp/dbwriter.tar.gz"]
   }
   
-  exec { "package_dbwriter":
-    cwd => "/opt/dbwriter",
-    command => "mvn package",
-    path => $path,
+  file { "/opt/dbwriter/logs":
+    ensure => directory,
     require => Exec["unpack_dbwriter"]
   }
   
-  exec { "rename_dbwriter"
-    command => "/opt/dbwriter/target/pv-db-writer-jar-with-dependencies pv-db-writer-full.jar",
+  exec { "package_dbwriter":
+    cwd => "/opt/dbwriter",
+    command => "mvn package",
+    user => "root",
     path => $path,
-    require => "package_dbwriter"
+    require => [ Exec["unpack_dbwriter"], Exec["package_finish"]]
+  }
+  
+  exec { "rename_dbwriter":
+    command => "mv pv-db-writer-jar-with-dependencies.jar pv-db-writer-full.jar",
+    cwd => "/opt/dbwriter/target",
+    path => $path,
+    require => Exec["package_dbwriter"],
     before => Cron["cron-hdp-batch"]
   }
 
