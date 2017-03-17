@@ -15,9 +15,8 @@ public class HdfsHelper {
 	public List<Pair> readHdfs(String pathParam) {
 		System.setProperty("HADOOP_USER_NAME", "root");
 		
-		// Path that we need to create in HDFS. Just like Unix/Linux file systems, HDFS file system starts with "/"
 		final Path path = new Path(pathParam + "/part-r-00000");
-			
+		
 		try {
 			DistributedFileSystem dfs = new DistributedFileSystem();
 			try {

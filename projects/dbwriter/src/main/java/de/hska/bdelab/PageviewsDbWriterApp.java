@@ -10,8 +10,10 @@ public class PageviewsDbWriterApp {
   private static HdfsHelper hdfsClient = new HdfsHelper();
 
   public static void main(String[] args) {
-	  // expects hdfs path as input
-	  // > path where the mapreduce job stored its output
+	  // expects as input:
+	  // arg[0] = hdfs input path = "/output/{DATE}/{HOUR}" e.g. "/output/17-03-17/13" 
+	  // arg[1] = cassandra output table = "{DATE}" e.g. "20170317"
+	  // arg[2] = cassandra output row = "{HOUR}" e.g. "13"
 	  List<Pair> results = new ArrayList<Pair>();
 	  
 	  results = hdfsClient.readHdfs(args[0]);
