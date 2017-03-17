@@ -8,6 +8,12 @@
     <packaging>jar</packaging>
 
     <name>pageviews-mapreduce</name>
+    
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.source>1.8</maven.compiler.source>
+    	<maven.compiler.target>1.8</maven.compiler.target>
+    </properties>
 
     <build>
         <plugins>
@@ -37,9 +43,6 @@
         </plugins>
     </build>
 
-    <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    </properties>
     <dependencies>
         <dependency>
             <groupId>org.apache.hadoop</groupId>
