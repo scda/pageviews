@@ -11,4 +11,13 @@
   * remove "local test" sections from init.pp's and activate "real downloads"
     * > auskommentieren, nicht komplett entfernen.
   
-* TEST TEST TEST :) (mit echten und finalen files etc.)
+* TEST TEST TEST :)
+  1. offline
+  2. online
+
+# BESPRECHUNG #
+* benötigter Arbeitsspeicher ~8GB ... Maschinen weiter reduzieren?
+
+
+# BEOBACHTUNGEN #
+* mapReduce job scheitert, wenn flume gerade eine Datei umbenennt, während der job läuft
