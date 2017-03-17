@@ -53,13 +53,13 @@ class flume {
   }
 
 	exec {"start-flume" :
-		command => "${home_dir}/apache-flume-${flume_version}-bin/bin/flume-ng agent --conf ${home_dir}/apache-flume-${flume_version}-bin/conf -conf-file ${home_dir}/apache-flume-${flume_version}-bin/conf/flume-kafka-source-hdfs-sink.conf --name agent1 &",
+		command => "${home_dir}/apache-flume-${flume_version}-bin/bin/flume-ng agent --conf ${home_dir}/apache-flume-${flume_version}-bin/conf -conf-file ${home_dir}/apache-flume-${flume_version}-bin/conf/flume-kafka-source-hdfs-sink.conf --name agent1 & >> ${home_dir}/apache-flume-${flume_version}-bin/flume.log",
 		require => [ Exec["unpack_flume"], Exec["start_hdpdaemons"] ],
 		timeout => 30
 	}
 
 	exec { "startupscript_flume" :
-    command => "echo '${home_dir}/apache-flume-${flume_version}-bin/bin/flume-ng agent --conf ${home_dir}/apache-flume-${flume_version}-bin/conf -conf-file ${home_dir}/apache-flume-${flume_version}-bin/conf/flume-kafka-source-hdfs-sink.conf --name agent1 &' >> /root/startupscript.sh",
+    command => "echo '${home_dir}/apache-flume-${flume_version}-bin/bin/flume-ng agent --conf ${home_dir}/apache-flume-${flume_version}-bin/conf -conf-file ${home_dir}/apache-flume-${flume_version}-bin/conf/flume-kafka-source-hdfs-sink.conf --name agent1 & >> ${home_dir}/apache-flume-${flume_version}-bin/flume.log' >> /root/startupscript.sh",
     user => "root",
     path => $path,
     require => File["/root/startupscript.sh"]
