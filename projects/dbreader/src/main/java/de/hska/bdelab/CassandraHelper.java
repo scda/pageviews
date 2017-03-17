@@ -58,9 +58,17 @@ public class CassandraHelper {
 
     public List<Row> lookupQuery(String[] args) {
     	String date = args[0];
-    	int startTime = Integer.parseInt(args[1]);
-    	int endTime = Integer.parseInt(args[2]);
     	String tablename = "t" + date;
+    	int startTime = 0;
+    	int endTime = 23;
+    	try {
+    		startTime = Integer.parseInt(args[1]) -1;
+        	endTime = Integer.parseInt(args[2]) -1;
+    	} catch (Exception ex) {
+    		
+    	}
+    	
+    	
     	
         Session session = this.getSession();
             	
