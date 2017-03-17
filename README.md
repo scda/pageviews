@@ -245,14 +245,14 @@ bin/kafka-server-start.sh config/server.properties
 
 You can create a new topic and check upon the creation with:
 ```bash
-bin/kafka-topics.sh --create --zookeeper 10.10.33.22:2181 --replication-factor 1 --partitions 1 --topic test
+bin/kafka-topics.sh --create --zookeeper 10.10.33.22:2181 --replication-factor 1 --partitions 1 --topic output
 bin/kafka-topics.sh --list --zookeeper 10.10.33.22:2181
 ```
 
 There are two command line tools, that allow you to write to or read from a given topic very easily:
 ```bash
-bin/kafka-console-producer.sh --broker-list 10.10.33.22:9092 --topic test
-bin/kafka-console-consumer.sh --bootstrap-server 10.10.33.22:9092 --zookeeper 10.10.33.22:2181 --topic test --from-beginning
+bin/kafka-console-producer.sh --broker-list 10.10.33.22:9092 --topic output
+bin/kafka-console-consumer.sh --bootstrap-server 10.10.33.22:9092 --zookeeper 10.10.33.22:2181 --topic output --from-beginning
 ```
 
 
