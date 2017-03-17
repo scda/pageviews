@@ -16,7 +16,8 @@ class storm {
   
   package { "openjdk-8-jdk" :
 	  ensure => present,
-	  require => Exec["apt-get update"]
+	  require => Exec["apt-get update"],
+    before => Package["maven"]
 	}  
   
   package { "maven":
@@ -116,6 +117,7 @@ class storm {
     mode => 644,
     require => Exec["unpack_storm"]
   }
+
   /*
   file {
     "${home_dir}/apache-storm-${storm_version}/conf/storm-env.sh":
@@ -190,18 +192,19 @@ class storm {
     require => [Exec["package_finish"], Exec["unpack_topology"]]
   }
   
-  file { "/etc/init/storm-topology.conf":
-    source => "puppet:///modules/storm/storm-topology.conf",
-    owner => root,
-    group => root,
-    mode => 755,
-    require => Exec["package_topology"]
+  exec { "start-storm-topology" :
+    command => "/opt/apache-storm-1.0.3/bin/storm jar /opt/topology/target/pageviewsTopology-jar-with-dependencies.jar de.hska.bdelab.PageviewsTopology",
+    path => $path,
+    user => "root",
+    require => [ Exec["package_finish"], Exec["package_topology"], Exec["start-storm-nimbus"], Exec["start-storm-supervisor"] ]
   }
   
-  exec { "start-storm-topology" :
-    command => "start storm-topology",
-    path => $path,
-    require => [ File["/etc/init/storm-topology.conf"], Exec["package_finish"] ]
-  }
+  cron { "cron-storm-topology" :
+    command => "/opt/apache-storm-1.0.3/bin/storm jar /opt/topology/target/pageviewsTopology-jar-with-dependencies.jar de.hska.bdelab.PageviewsTopology",
+    user => "root",
+    special => "reboot",
+    ensure => present,
+    require => [ Exec["package_topology"]]
+	}
   
 }
