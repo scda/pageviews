@@ -171,25 +171,19 @@ class storm {
     require => [ File["/etc/init/storm-ui.conf"], File["${home_dir}/apache-storm-${storm_version}/conf/storm.yaml"], Exec["package_finish"] ]
   }
   
-  file { "/tmp/topology.tar.gz":
-    source => "puppet:///modules/storm/topology.tar.gz",
+  file { "${home_dir}/topology":
+    source => "puppet:///modules/storm/topology",
     ensure => present,
+    recurse => true,
     owner => root,
-    group => root,
-    mode => 755
-  }
-  
-  exec {"unpack_topology":
-    command => "tar -zxf /tmp/topology.tar.gz -C ${home_dir}/",
-    path => $path,
-    require => File["/tmp/topology.tar.gz"]
+    group => root
   }
   
   exec {"package_topology":
     cwd => "${home_dir}/topology",
     command => "mvn package",
     path => $path,
-    require => [Exec["package_finish"], Exec["unpack_topology"]]
+    require => [Exec["package_finish"], File["${home_dir}/topology"]]
   }
   
   exec { "start-storm-topology" :
