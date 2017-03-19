@@ -1,29 +1,14 @@
 class flume {
 	$home_dir = "/opt"
 	$flume_version = "1.7.0"
-
-	## BEGIN local test
-  file {
-    "/tmp/flume.tar.gz":
-    source => "puppet:///modules/flume/apache-flume-${flume_version}-bin.tar.gz",
-    before => Exec["download_flume"]
-  }
+  
   exec { "download_flume" :
-    command => "echo 0",
-    path => $path,
-    unless => "ls /tmp | grep flume.tar.gz",
-    require => Exec["insecuressh_finish"]
-  }
-  ## END local test
-
-  /*
-  exec { "download_flume" :
-	  command => "wget -O /tmp/flume.tar.gz http://mirrors.cicku.me/apache/flume/1.7.0/apache-flume-1.7.0-bin.tar.gz",
+	  command => "wget -O /tmp/flume.tar.gz http://ftp-stud.hs-esslingen.de/pub/Mirrors/ftp.apache.org/dist/flume/1.7.0/apache-flume-1.7.0-bin.tar.gz",
     path => $path,
     unless => "ls ${home_dir} | grep apache-flume-${flume_version}-bin.tar.gz",
     require => Exec["insecuressh_finish"]
   }
-  */
+  
 
 	exec { "unpack_flume" :
     command => "tar -zxf /tmp/flume.tar.gz -C ${home_dir}/",

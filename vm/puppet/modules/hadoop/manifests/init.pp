@@ -28,28 +28,14 @@ class hadoop {
     path => $path,
     require => [ Package["openjdk-8-jdk"], Package["maven"] ]
   }
-
-  ## BEGIN local test
-  file { "/tmp/hadoop.tar.gz":
-    source => "puppet:///modules/hadoop/hadoop-2.7.3.tar.gz",
-    before => Exec["download_hadoop"]
-  }
-  exec { "download_hadoop":
-    command => "echo 0",
-    path => $path,
-    unless => "ls /tmp | grep hadoop.tar.gz",
-    require => Exec["insecuressh_finish"]
-  }
-  ## END local test
-
-  /*
+  
+  
   exec { "download_hadoop" :
-  command => "wget -O /tmp/hadoop.tar.gz http://mirrors.cicku.me/apache/hadoop/common/hadoop-${hadoop_version}/hadoop-${hadoop_version}.tar.gz",
+  command => "wget -O /tmp/hadoop.tar.gz http://ftp-stud.hs-esslingen.de/pub/Mirrors/ftp.apache.org/dist/hadoop/common/hadoop-${hadoop_version}/hadoop-${hadoop_version}.tar.gz",
     path => $path,
     unless => "ls /opt | grep hadoop-${hadoop_version}",
     require => Exec["insecuressh_finish"]
   }
-  */
 
   exec { "unpack_hadoop":
     command => "tar -zxf /tmp/hadoop.tar.gz -C /opt",

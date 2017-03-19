@@ -35,37 +35,7 @@ class storm {
     command => "echo 'JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64' >> /etc/environment",
     path => $path,
   }
-  
-  ## BEGIN local test
-  file {
-    "/tmp/python.tar.gz":
-    source => "puppet:///modules/storm/Python-${python_version}.tgz",
-    before => Exec["download_python"]
-  }
-  exec { "download_python" :
-    command => "echo 0",
-    path => $path,
-    unless => "ls /usr/local/bin | grep python"
-  }
-  file {
-    "/tmp/storm.tar.gz":
-    source => "puppet:///modules/storm/apache-storm-1.0.3.tar.gz",
-    before => Exec["download_storm"]
-  }
-  exec { "download_storm" :
-    command => "echo 0",
-    path => $path,
-    unless => "ls ${home_dir} | grep apache-storm-${storm_version}",
-    require => Exec["insecuressh_finish"]
-  }
-  
-  file { 
-    "/root/storm-master.zip" :
-    source => "puppet:///modules/storm/storm-master.zip"
-  }
-  ## END local test
 
-  /*
   exec { "download_python" :
     command => "wget -O /tmp/python.tar.gz https://www.python.org/ftp/python/2.6.6/Python-2.6.6.tgz",
     path => $path,
@@ -73,12 +43,11 @@ class storm {
     require => Exec["insecuressh_finish"]
   }
   exec { "download_storm" :
-	  command => "wget -O /tmp/storm.tar.gz http://ftp.halifax.rwth-aachen.de/apache/storm/apache-storm-1.0.3/apache-storm-1.0.3.tar.gz",
+	  command => "wget -O /tmp/storm.tar.gz http://ftp-stud.hs-esslingen.de/pub/Mirrors/ftp.apache.org/dist/storm/apache-storm-1.0.3/apache-storm-1.0.3.tar.gz",
     path => $path,
     unless => "ls ${home_dir} | grep apache-storm-${storm_version}",
     require => Exec["insecuressh_finish"]
   }
-  */
   
   exec { "unpack_python" :
     command => "tar -zxf /tmp/python.tar.gz -C /tmp/",

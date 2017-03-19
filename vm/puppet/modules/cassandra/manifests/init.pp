@@ -21,36 +21,20 @@ class cassandra {
 		ensure => present,
 		require => [ Exec["update"], Exec["jdk8-ppa"] ]
 	}
-
-
-
-	## BEGIN local test
-	file {
-		"/tmp/cassandra.tar.gz":
-		source => "puppet:///modules/cassandra/apache-cassandra-3.10-bin.tar.gz",
-		before => Exec["download_cassandra"]
-	}
-	exec { "download_cassandra" :
-		command => "echo 0",
-		path => $path,
-		require => Exec["insecuressh_finish"]
-	}
-	## END local test
-
-	/*
+	
 	exec { "download_cassandra" :
 	command => "wget -O /tmp/cassandra.tar.gz http://mirror.netcologne.de/apache.org/cassandra/${cassandra_version}/apache-cassandra-${cassandra_version}-bin.tar.gz",
 		path => $path,
 		unless => "ls ${home_dir} | grep apache-cassandra-${cassandra_version}",
 		require => Exec["insecuressh_finish"]
 	}
-	*/
+	
 
 	exec { "unpack_cassandra" :
 		command => "tar -zxf /tmp/cassandra.tar.gz -C ${home_dir}",
 		path => $path,
 		creates => "${home_dir}/apache-cassandra-${cassandra_version}",
-		require => File["/tmp/cassandra.tar.gz"]
+		require => Exec["download_cassandra"]
 	}
 
 	user { "cass-user" :
