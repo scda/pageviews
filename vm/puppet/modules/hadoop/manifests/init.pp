@@ -191,20 +191,17 @@ class hadoop {
     require => Exec["compile_job"]
   }
   
-  file { "/tmp/dbwriter.tar.gz":
-    source => "puppet:///modules/hadoop/dbwriter.tar.gz",
-    ensure => present
-  }
-  
-  exec { "unpack_dbwriter": 
-    command => "tar -zxf /tmp/dbwriter.tar.gz -C /opt",
-    path => $path,
-    require => File["/tmp/dbwriter.tar.gz"]
+  file { "/opt/dbwriter":
+    source => "puppet:///modules/hadoop/dbwriter",
+    recurse => true,
+    ensure => present,
+    owner => "root",
+    group => "root"
   }
   
   file { "/opt/dbwriter/logs":
     ensure => directory,
-    require => Exec["unpack_dbwriter"]
+    require => File["/opt/dbwriter"]
   }
   
   exec { "package_dbwriter":
@@ -212,7 +209,7 @@ class hadoop {
     command => "mvn package",
     user => "root",
     path => $path,
-    require => [ Exec["unpack_dbwriter"], Exec["package_finish"]]
+    require => [ File["/opt/dbwriter"], Exec["package_finish"]]
   }
   
   exec { "rename_dbwriter":
