@@ -13,6 +13,9 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 
 public class Generator {
 	private static final Logger LOGGER = Logger.getLogger(Generator.class.getName());
+	
+	private static final int MIN_SLEEP_TIME = 10;
+	private static final int MAX_SLEEP_TIME = 200;
 
 	final String[] urls = { "index", "start", "stream", "batch", "assets", "live", "timings", "requests", "resources",
 			"exit", "readme", "modules", "machines", "overview", "help" };
@@ -37,7 +40,7 @@ public class Generator {
 				// send(topic, key, value)
 				producer.send(new ProducerRecord<String, String>("output", "pageviews", NewMessage()));
 				try {
-					Thread.sleep(ThreadLocalRandom.current().nextInt(10, 2000));
+					Thread.sleep(ThreadLocalRandom.current().nextInt(MIN_SLEEP_TIME, MAX_SLEEP_TIME));
 				} catch (InterruptedException ex) {
 					ex.printStackTrace();
 				}
