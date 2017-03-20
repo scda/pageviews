@@ -80,8 +80,9 @@ $ dashing start
 
 You can now open [localhost:3030](localhost:3030) in your browser and should see a dashboard. The data inside the dashboard will appear, when the stream application has processed its first datasets.
 
-### Other Addresses ###
+### Other Adresses ###
 | machine | address | port of web-ui |
+|---|---|---|
 | Hadoop node | 10.10.33.11 | 50070 |
 | Kafka node | 10.10.33.22 | -- |
 | Storm node | 10.10.33.33 | 8080 |
