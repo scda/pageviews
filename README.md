@@ -27,7 +27,7 @@ Version used during development: 4.8.2
 Version used during development: 3.3.9
 
 **Ruby**
-[ruby-lang.org]https://www.ruby-lang.org/)
+[ruby-lang.org](https://www.ruby-lang.org/)
 Version used during development: 2.4.0
 *- only needed for the dashboard -*
 
@@ -45,7 +45,7 @@ This application will produce somewhat random inputs for the batch and stream pr
 Change into the *generator* directory and run it 
 ```bash
 $ mvn package
-$ mvn exec:java
+$ java -jar target/pv-generator-*-jar-with-dependencies.jar
 ```
 
 ### Reader ###
@@ -56,6 +56,7 @@ Change into the *dbreader* directory and run it
 $ mvn package
 $ java -jar target/dbreader-*-jar-with-dependencies.jar ${DATE} ${START-TIME} ${END-TIME}
 ```
+The *{DATE}* has to be provided in the format *yyyymmdd* (e.g. "20170317") without any separators. *{START-TIME}* and *{END-TIME}* have to be provided as numbers in the format *hh* (e.g. "04").s
 
 ### Dashboard ###
 This application will give you the output from the stream processing.
@@ -77,7 +78,15 @@ $ bundle
 $ dashing start
 ```
 
-You can now open [localhost:3030](localhost:3030) in your browser and should see a dashboard. The data inside the dashboard will only appear, when the stream application has processed its first datasets.
+You can now open [localhost:3030](localhost:3030) in your browser and should see a dashboard. The data inside the dashboard will appear, when the stream application has processed its first datasets.
+
+### Other Addresses ###
+| machine | address | port of web-ui |
+| Hadoop node | 10.10.33.11 | 50070 |
+| Kafka node | 10.10.33.22 | -- |
+| Storm node | 10.10.33.33 | 8080 |
+| Cassandra node | 10.10.33.44 | -- |
+ 
 
 
 
